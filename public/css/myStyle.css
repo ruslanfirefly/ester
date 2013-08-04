@@ -1,0 +1,20 @@
+body{
+    height: 100%;
+    background-image: url("../img/logo.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-attachment: fixed;
+}
+.h50{
+    height: 50px;
+}
+#header{
+    background-color: #dedede;
+}
+.fireflyForm{
+    background-color: #f5f5f5;
+    border: 1px solid #dddddd;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
