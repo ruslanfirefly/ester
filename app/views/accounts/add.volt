@@ -1,9 +1,9 @@
 {% extends "index/index.volt" %}
 
-{% block mainMenu %}{% include "mainMenu/index.volt" %}{% endblock %}
+
 {% block title %}Добавление пользователя{% endblock %}
 {% block content %}
-
+<div class="container-fluid">
      <form class="span12 fireflyForm" action="/accounts/add/" method="post" >
         <h3 class="text-center">Добавление пользователя</h3>
         <div class="span12">
@@ -91,5 +91,5 @@
         </div>
 
     </form>
-
+</div>
 {% endblock %}

@@ -6,7 +6,7 @@
     <script src="/js/jq.js" type="text/javascript"></script>
     <script src="/js/bootstrap.min.js" type="text/javascript"></script>
     <script src="/js/myjs.js" type="text/javascript"></script>
-    <title>{% block title %}Личный кабинет ЭСТЕР.{% endblock%}</title>
+    <title>{% block title %}Личный кабинет ЭСТЕР.{% endblock%}</title >
 </head>
 <body>
 <div class="row-fluid">

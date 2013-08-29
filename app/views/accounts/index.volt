@@ -3,6 +3,7 @@
 {% block mainMenu %}{% include "mainMenu/index.volt" %}{% endblock %}
 {% block title %}Пользователи системы ЭСТЕР. {% endblock %}
 {% block content %}
+<div class="container-fluid">
 <table class="table table-hover table-condensed" style="background-color: #fcfcfc">
     <tr>
         <th class="span1">Логин</th>
@@ -40,4 +41,5 @@
         </tr>
         {% endfor %}
 </table>
+</div>
 {% endblock %}

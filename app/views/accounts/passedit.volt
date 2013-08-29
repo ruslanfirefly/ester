@@ -1,8 +1,7 @@
 {% extends "index/index.volt" %}
-{% block mainMenu %}{% include "mainMenu/index.volt" %}{% endblock %}
 {% block title %}Редактирование пароля.{% endblock %}
 {% block content %}
-
+<div class="container-fluid">
     <form class="span12 fireflyForm" action="/accounts/passedit/{{ id }}" method="post" >
         <h3 class="text-center">Редактирование пароля пользователя {{ login }}</h3>
         <div class="span12">
@@ -23,5 +22,5 @@
             <a href="/accounts/" class="btn">Отменить</a>
         </div>
     </form>
-
+</div>
 {% endblock %}
