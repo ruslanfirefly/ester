@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+    {% block jscss %}
     <link href="/css/bootstrap.min.css" type="text/css" rel="stylesheet">
     <link href="/css/myStyle.css" type="text/css" rel="stylesheet">
     <script src="/js/jq.js" type="text/javascript"></script>
     <script src="/js/bootstrap.min.js" type="text/javascript"></script>
     <script src="/js/myjs.js" type="text/javascript"></script>
+    {% endblock %}
     <title>{% block title %}Личный кабинет ЭСТЕР.{% endblock%}</title >
 </head>
-<body>
-<div class="row-fluid">
+<body style="min-width: 1000px;">
+<div class="row-fluid" >
     <div class="navbar">
         <div class="navbar-inner">
             <div class="container">

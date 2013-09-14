@@ -1,2 +1,3 @@
 {% extends "index/index.volt" %}
-{% block title %}ДМС для иностранных граждан{% endblock %}
+{% block mainMenu %}{% include "mainMenu/index.volt" %}{% endblock %}
+{% block title %}Финансовые риски{% endblock %}

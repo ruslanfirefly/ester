@@ -17,14 +17,13 @@ try {
 
     //Set the database service
     $di->set('db', function(){
-        $db = new Db();
-        return $db->getInstance();
-       /* return new \Phalcon\Db\Adapter\Pdo\Mysql(array(
+        return new \Phalcon\Db\Adapter\Pdo\Mysql(array(
             "host" => "localhost",
             "username" => "root",
             "password" => "12345678",
-            "dbname" => "ester"
-        ));*/
+            "dbname" => "ester",
+            "options" => array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"),
+        ));
     });
 
     //Setting up the view component

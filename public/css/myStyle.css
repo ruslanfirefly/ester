@@ -5,6 +5,9 @@ body{
     background-position: center;
     background-attachment: fixed;
 }
+input[type=checkbox], input[type=radio]{
+    margin-bottom: 5px;
+}
 .h50{
     height: 50px;
 }
@@ -17,4 +20,10 @@ body{
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     border-radius: 4px;
+}
+#insurFace *, #vigFace *{
+    display: none;
+}
+.padding5px{
+    padding-left: 5px;
 }

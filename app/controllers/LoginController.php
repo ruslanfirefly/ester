@@ -16,6 +16,7 @@ class LoginController extends Phalcon\Mvc\Controller{
                 $user->getUserById($arrUser['id']);
                 $this->session->set("login", $user->login);
                 $this->session->set("role", $user->role);
+                $this->session->set("userid", $arrUser['id']);
                 $this->response->redirect('');
             }
         }

@@ -17,7 +17,7 @@
                                 <li><a href="/finriski/">Финансовые риски</a></li>
                                 <li><a href="#">КАСКО</a></li>
                                 <li><a href="#">ОСАГО</a></li>
-                                <li><a href="/dms/">Таджики</a></li>
+                                <li><a href="/dms/">ДМС для ин.граждан</a></li>
                             </ul>
                         </li>
                         <li class="divider-vertical"></li>
