@@ -1,5 +1,7 @@
 <?php
-header('Content-Type: text/html; charset=utf-8');
+//header('Content-Type: application/msword');
+//header('Content-Disposition: attachment; filename="polis.docx"');
+require_once '../app/lib/phpWordExel.php';
 try {
 
     //Register an autoloader

@@ -5,12 +5,12 @@
     <link href="/css/datepicker.css" type="text/css" rel="stylesheet">
     <script src="/js/datepicker.js" type="text/javascript"></script>
 {% endblock %}
-{% block title %}Финансовые риски - Добавление договора{% endblock %}
+{% block title %}Финансовые риски - Редактирование договора{% endblock %}
 {% block content %}
     <div class="container-fluid">
-        <form class="span12 fireflyForm" id = "formAddDogFinR" action="/finriski/add/" method="post" >
+        <form class="span12 fireflyForm" id = "formAddDogFinR" action="/finriski/edit/{{ dogovor.id }}/" method="post" >
             <div class="row-fluid text-center">
-                <h3>Добавление нового договора</h3>
+                <h3> Редактирование договора {{ dogovor.dogovor }} от {{ dogovor.time }}</h3>
             </div>
             <div class="row-fluid text-center">
                 <div class="span12">
