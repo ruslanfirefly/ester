@@ -10,7 +10,7 @@
     <div class="container-fluid">
         <form class="span12 fireflyForm" id = "formAddDogFinR" action="/finriski/add/" method="post" >
             <div class="row-fluid text-center">
-                <h3>Добавление нового договора</h3>
+                <h3>Добавление нового договора {{ test }}</h3>
             </div>
             <div class="row-fluid text-center">
                 <div class="span12">

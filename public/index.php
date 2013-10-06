@@ -1,6 +1,5 @@
 <?php
-//header('Content-Type: application/msword');
-//header('Content-Disposition: attachment; filename="polis.docx"');
+
 require_once '../app/lib/phpWordExel.php';
 try {
 
@@ -19,13 +18,15 @@ try {
 
     //Set the database service
     $di->set('db', function(){
-        return new \Phalcon\Db\Adapter\Pdo\Mysql(array(
+        $db =  new \Phalcon\Db\Adapter\Pdo\Mysql(array(
             "host" => "localhost",
             "username" => "root",
             "password" => "12345678",
             "dbname" => "ester",
             "options" => array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"),
         ));
+        $db->begin();
+        return $db;
     });
 
     //Setting up the view component

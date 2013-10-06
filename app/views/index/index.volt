@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     {% block jscss %}
     <link href="/css/bootstrap.min.css" type="text/css" rel="stylesheet">
     <link href="/css/myStyle.css" type="text/css" rel="stylesheet">

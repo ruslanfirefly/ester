@@ -22,6 +22,7 @@ class FinriskiController extends Phalcon\Mvc\Controller {
         $this->view->setVar("dogovors", $dogovors->getAllDogovors());
     }
     public  function addAction(){
+        $this->di->get('db')->begin();
         $dogovor = new Finrisk();
         $message = array();
         if($this->request->isPost()){
@@ -69,16 +70,18 @@ class FinriskiController extends Phalcon\Mvc\Controller {
             $dogovor->time = date('d/m/Y', time());
             if(!count($message) && $range){
                 if($dogovor->saveDogovorFinRisk()){
-                    $this->response->redirect("finriski/print/".$dogovor->id."/");
+                    $this->response->redirect("finriski/");
                 }else{
                     $error =true;
                 }
             }
         }
+        $this->view->setVar("test",$dogovor->id);
         $this->view->setVar("dogovor", $dogovor);
         $this->view->setVar("messages", $message);
         $this->view->setVar("m", $range);
         $this->view->setVar("error", $error);
+
     }
     public function printAction($id=false){
         if (!$id || !preg_match('/^\d{1,}$/',$id)){
@@ -129,7 +132,9 @@ class FinriskiController extends Phalcon\Mvc\Controller {
         }
         $dogovor = new Finrisk();
         $dogovor->id = $id;
-        $dogovor->getDogById();
+        if(!$dogovor->getDogById()){
+            $this->response->redirect('finriski/');
+        }
         $message = array();
         if($this->request->isPost()){
             $validator = new Phalcon\Validation();
