@@ -18,9 +18,21 @@ class FinriskiController extends Phalcon\Mvc\Controller {
     }
 
     public function indexAction(){
-        $dogovors = new Finrisk();
-        $this->view->setVar("dogovors", $dogovors->getAllDogovors());
+		$dogovors = new Finrisk();
+		$currentPage = (int) $_GET['page'];
+		$allDogovors = $dogovors->getAllDogovors();
+		var_dump($allDogovors);
+		$paginator = new \Phalcon\Paginator\Adapter\NativeArray(
+			array(
+				"data" => $allDogovors,
+				"limit" =>15 ,
+				"page" => $currentPage,
+			)
+		);
+
+		$this->view->setVar("page", $paginator->getPaginate());
     }
+
     public  function addAction(){
         $this->di->get('db')->begin();
         $dogovor = new Finrisk();
