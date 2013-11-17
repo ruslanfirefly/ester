@@ -11,22 +11,39 @@ class Users extends Phalcon\Mvc\Model {
     public $role;
     public $city;
     public $dogovor;
-    public $email;
+	public $email;
+
+	public $subordinateUsers;
 
 
     public function getAllUsers(){
         $this->role = $this->getDI()->get('session')->get('role');
-        return $this->getDI()->get('db')->fetchAll('SELECT ester_users.id,
-                                  ester_users.username,
-                                  ester_users.firstname,
-                                  ester_users.secondname,
-                                  ester_rolename.rolename as role,
-                                  ester_city.city,
-                                  ester_users.dogovor,
-                                  ester_users.email,
-                                  ester_users.active FROM ester_users, ester_city,ester_rolename
-                                  WHERE ester_users.city = ester_city.id AND ester_rolename.id = ester_users.role AND  ester_users.role>= :role', Phalcon\Db::FETCH_ASSOC,
-                                  array('role' => $this->role));
+		$subRolesIds = Roles::getRoleSubroles($this->role);
+		if (empty($subRolesIds))
+		{
+			return array();
+		}
+		if (in_array($this->role, array(Roles::ROLE_SUPERADMIN, Roles::ROLE_ADMIN)))
+		{
+			$subRolesIds[] = $this->role;
+		}
+
+		$roles = new Phalcon\Db\RawValue(implode(',', $subRolesIds));
+		return $this->getDI()->get('db')->fetchAll('SELECT eu.id,
+                                  eu.username,
+                                  eu.firstname,
+                                  eu.secondname,
+								  er.id as role_id,
+                                  er.rolename as role,
+                                  ec.city,
+                                  eu.dogovor,
+                                  eu.email,
+								  eu.active FROM ester_users as eu, ester_city as ec, ester_rolename as er
+								  WHERE eu.city = ec.id AND er.id = eu.role 
+								    AND eu.role IN (' . implode(',', $subRolesIds) . ')', Phalcon\Db::FETCH_ASSOC
+								    //AND eu.role IN (:roles)', Phalcon\Db::FETCH_ASSOC,
+									//	array('roles' => implode(',', $subRolesIds))
+								);
     }
     public function saveNewUser(){
         return $this->getDI()->get('db')->insert('ester_users',
@@ -55,15 +72,46 @@ class Users extends Phalcon\Mvc\Model {
         $this->city = $arrUser['city'];
         $this->dogovor = $arrUser['dogovor'];
         $this->email = $arrUser['email'];
-        $this->active = $arrUser['active'];
+		$this->active = $arrUser['active'];
     }
 
     public function updateUser($id){
         return  $this->getDI()->get('db')->update('ester_users',
                                                         array("firstname","secondname","role","city","dogovor","email","active"),
-                                                        array($this->firstName,$this->secondName,$this->role,$this->city,$this->dogovor,$this->email,$this->active),
-                                                        'id = "'.$id.'"');
-    }
+														array(
+															$this->firstName,
+															$this->secondName,
+															$this->role,
+															$this->city,
+															$this->dogovor,
+															$this->email,
+															$this->active
+														),
+                                                        'id = "' . $id . '"');
+	}
+
+	public function updateSubordinateUsers($id, $subordinateUsers)
+	{
+		try {
+			$connection = $this->getDI()->get('db');
+
+			$connection->begin();
+
+			$connection->delete('ester_subordinate_users', 'user_id = "' . $id . '"');
+			foreach($subordinateUsers as $susr)
+			{
+				$connection->insert('ester_subordinate_users', array($id, $susr), array('user_id', 'subordinate_user_id'));
+			}
+
+			$connection->commit();
+		}
+		catch(Exception $e)
+		{
+			$connection->rollback();
+			return false;
+		}
+		return true;
+	}
 
     public function updatePassUser($id){
         return  $this->getDI()->get('db')->update('ester_users',array("token"),array(md5(sha1($this->pass)+md5($this->login))), 'id = "'.$id.'"');
@@ -81,4 +129,59 @@ class Users extends Phalcon\Mvc\Model {
                                                           "login"=>$this->login
                                                         ));
     }
+
+	static public function extractUserIds($subordinateUsers)
+	{
+		$userIds = array();
+		if (isset($subordinateUsers['users']))
+		{
+			foreach($subordinateUsers['users'] as $su)
+			{
+				$userIds[$su] = $su;
+				if (isset($subordinateUsers[$su]))
+				{
+					$userIds += self::extractUserIds($subordinateUsers[$su]);
+				}
+			}
+		}
+
+		return array_unique($userIds);
+	}
+	public function getSubordinateUsers()
+	{
+		if ($this->id != NULL)
+		{
+			$rawSubordinateUsers = $this->getDI()->get('db')->fetchAll("
+				SELECT
+					DISTINCT
+					esu1.subordinate_user_id as layer1,
+					esu2.subordinate_user_id as layer2,
+					esu3.subordinate_user_id as layer3
+				FROM ester_subordinate_users esu1
+				LEFT JOIN ester_subordinate_users esu2 ON esu1.subordinate_user_id = esu2.user_id
+				LEFT JOIN ester_subordinate_users esu3 ON esu2.subordinate_user_id = esu3.user_id
+				WHERE esu1.user_id = :uid ORDER BY layer1, layer2, layer3",
+				Phalcon\Db::FETCH_ASSOC,
+				array('uid' => $this->id)
+			);
+
+			$subordinateUsers = array();
+			foreach($rawSubordinateUsers as $item)
+			{
+				if ($item['layer3'] !== NULL) {
+					$subordinateUsers[$item['layer1']][$item['layer2']]['users'][$item['layer3']] = $item['layer3'];
+				}
+
+				if($item['layer2'] !== NULL) {
+					$subordinateUsers[$item['layer1']]['users'][$item['layer2']] = $item['layer2'];
+				}
+
+				$subordinateUsers['users'][$item['layer1']] = $item['layer1'];
+			}
+
+			return $subordinateUsers;
+		}
+
+		return array();
+	}
 }

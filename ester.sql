@@ -111,7 +111,7 @@ CREATE TABLE `ester_rolename` (
 --  Records of `ester_rolename`
 -- ----------------------------
 BEGIN;
-INSERT INTO `ester_rolename` VALUES ('2', 'Админ'), ('4', 'Брокер'), ('3', 'Менеджер'), ('1', 'СуперАдмин'), ('5', 'Фин. Брокер');
+INSERT INTO `ester_rolename` VALUES ('2', 'Админ'), ('4', 'Брокер'), ('3', 'Менеджер'), ('1', 'СуперАдмин'), ('5', 'Фин. Брокер'), ('6', 'Агент');
 COMMIT;
 
 -- ----------------------------
@@ -144,6 +144,17 @@ CREATE TABLE `ester_users` (
 BEGIN;
 INSERT INTO `ester_users` VALUES ('9', 'ruslanfirefly', 'Ruslan', 'Serkin26', '35f4a8d465e6e1edc05f3d8ab658c551', '1', '1', '1', 'superdogovor4', 'ruslan.ru@gmail.com'), ('3', 'fireflyuser', 'fire', 'fly', '8f14e45fceea167a5a36dedd4bea2543', '1', '2', '1', '', 'test@test.ru'), ('14', 'firefly1', '', '', '6512bd43d9caa6e02c990b0a82652dca', '1', '1', '1', '', 'f@DFSD.ER'), ('8', 'testtest', 'firefly', 'firefly12', 'c20ad4d76fe97759aa27a0c99bff6710', '1', '4', '2', '999', 'etst@fure.ru'), ('13', 'goagoagoa', 'goa', 'goa', '67c6a1e7ce56d3d6fa748ab6d9af3fd7', '1', '1', '1', 'goa', 'goa@goa.ru'), ('10', 'watermark', 'Ruslan', 'Serkin', 'f45a1078feb35de77d26b3f7a52ef502', '1', '2', '1', '', 'ruslan.ru@gmail.com'), ('15', 'estertest', 'Ester', 'Test', '3b70862082788390db556bdc20602f29', '1', '1', '1', '333', 'test@test.ru'), ('16', 'baltikabaltika', 'Иван', 'Иванов', '8f14e45fceea167a5a36dedd4bea2543', '1', '4', '1', '01/09/2013-sp', 'baltika@mail.ru');
 COMMIT;
+
+
+-- ----------------------------
+--  Table structure for `ester_users`
+-- ----------------------------
+DROP TABLE IF EXISTS `ester_subordinate_users`;
+CREATE TABLE `ester_subordinate_users` (
+	`user_id` int(11) NOT NULL,
+	`subordinate_user_id` int(11) NOT NULL,
+	PRIMARY KEY(`user_id`, `subordinate_user_id`)
+) ENGINE=MyISAM AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 --  Function structure for `saveDogovor`

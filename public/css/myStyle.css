@@ -27,3 +27,7 @@ input[type=checkbox], input[type=radio]{
 .padding5px{
     padding-left: 5px;
 }
+.subordinate-users label { line-height: 24px; margin-bottom: 0px; }
+.subordinate-users .table th,
+.subordinate-users .table td { padding: 0px 8px; line-height: 24px; }
+.hidden { display: none; }

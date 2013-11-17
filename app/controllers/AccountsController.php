@@ -6,7 +6,8 @@ class AccountsController extends Phalcon\Mvc\Controller{
         if(!$this->session->has("login")){
            $this->response->redirect('login/');
         }
-        if($this->session->get("role")>3){
+		if(!in_array((int)$this->session->get("role"), array(Roles::ROLE_SUPERADMIN, Roles::ROLE_ADMIN, Roles::ROLE_MANAGER)))
+		{
             $this->response->redirect('');
         }
         //дефолтные значения
@@ -51,7 +52,6 @@ class AccountsController extends Phalcon\Mvc\Controller{
             $user->email = trim($this->request->getPost('email'));
             $user->active = trim($this->request->getPost('active'));
             $user->pass = trim($this->request->getPost('token'));
-
             $token2 = trim($this->request->getPost('token2'));
 
             if($user->login===''){
@@ -91,18 +91,24 @@ class AccountsController extends Phalcon\Mvc\Controller{
         $this->view->setVar("secondname",$user->secondName);
         $this->view->setVar("curRole",$user->role);
         $this->view->setVar("email",$user->email);
-        $this->view->setVar("active",$user->active);
+		$this->view->setVar("active",$user->active);
 
+		$this->view->setVar("users", $user->getAllUsers());
+		//$this->view->setVar("subordinateUsers", $user->getSubordinateUsers());
     }
 
     public function editAction($iduser){
         $cites = new City();
         $roles = new Roles();
-        $this->view->setVar("cites", $cites->getAllCitys());
-        $this->view->setVar("roles", $roles->getAllRoles());
         $user = new Users();
-        $user->getUserById($iduser);
-        if($this->session->get('role') > $user->role){
+		$user->getUserById($iduser);
+		$role = new Roles(); 
+		$role = $role->getRoleById($this->session->get('role'));
+
+        $this->view->setVar("cites", $cites->getAllCitys());
+		$this->view->setVar("roles", $role->getAllRoles()); // role with policies, roles - without
+
+        if($role->id > $user->role){
             $this->response->redirect('');
         }
         $messages = array();
@@ -114,12 +120,26 @@ class AccountsController extends Phalcon\Mvc\Controller{
             $user->dogovor = htmlspecialchars(strip_tags(trim($this->request->getPost('dogovor'))));
             $user->email = trim($this->request->getPost('email'));
             $user->active = trim($this->request->getPost('active'));
+			$subordinateUsers = $this->request->getPost('subusers');
+			$subordinateUsers = array_keys($subordinateUsers);
+
+			if (!preg_match('/^[0-9]*$/', implode('', $subordinateUsers)))
+			{
+				$messages[] = 'Неверно указаны пользователи';
+			}
             if(!preg_match('/^(([a-zA-Z0-9_\-.]+)@([a-zA-Z0-9\-]+)\.[a-zA-Z0-9\-.]+$)/',$user->email)){
                 $messages[] = 'Введите корректный Email';
             }
             if(!count($messages)){
                 if($user->updateUser($iduser)){
-                    $this->response->redirect('accounts/');
+					if ($user->updateSubordinateUsers($iduser, $subordinateUsers))
+					{
+	                    $this->response->redirect('accounts/');
+					}
+					else
+					{
+						$messages[] = 'Ошибка при изменении списка подчиненных пользователей';
+					}
                 }else{
                     $messages[] = 'Ошибка при обновлении';
                 }
@@ -135,6 +155,15 @@ class AccountsController extends Phalcon\Mvc\Controller{
         $this->view->setVar("email",$user->email);
         $this->view->setVar("active",$user->active);
         $this->view->setVar("id",$iduser);
+
+		$subordinateRoles = array(
+			Roles::ROLE_MANAGER => $roles->getSubordinateRoleUsers(Roles::ROLE_MANAGER),
+			Roles::ROLE_FINBROKER => $roles->getSubordinateRoleUsers(Roles::ROLE_FINBROKER),
+			Roles::ROLE_BROKER => $roles->getSubordinateRoleUsers(Roles::ROLE_BROKER),
+		);
+		$this->view->setVar("users", $roles->getSubordinateRoleUsers(array_keys($subordinateRoles)));
+		$this->view->setVar("subordinateRoles", $subordinateRoles);
+		$this->view->setVar("subordinateUsers", $user->getSubordinateUsers());
     }
 
     public function passeditAction($iduser){
