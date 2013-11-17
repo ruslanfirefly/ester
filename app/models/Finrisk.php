@@ -67,30 +67,52 @@ class Finrisk extends Phalcon\Mvc\Model{
     }
 
     public function getAllDogovors(){
-        $role = $this->getDI()->get('session')->get("role");
-        if($role<3){
-            return $this->getDI()->get('db')->fetchAll('SELECT ester_finriski.id,
-                                             ester_finriski.familia, ester_finriski.imya,ester_finriski.otchestvo,ester_finriski.dogovor,ester_finriski.dog_time
-                                   FROM ester_finriski ORDER BY id DESC
-                                  ', Phalcon\Db::FETCH_ASSOC);
-        }else{
-            $userid = $this->getDI()->get('session')->get("userid");
-            return $this->getDI()->get('db')->fetchAll('SELECT ester_finriski.id,
-                                             ester_finriski.familia, ester_finriski.imya,ester_finriski.otchestvo,ester_finriski.dogovor,ester_finriski.dog_time
-                                   FROM ester_finriski WHERE userid = :id ORDER BY id DESC
-                                  ', Phalcon\Db::FETCH_ASSOC, array('id'=>$userid));
-        }
+		$role = $this->getDI()->get('session')->get("role");
+		$sql = 'SELECT ef.id,
+                ef.familia,
+				ef.imya,
+				ef.otchestvo,
+				ef.dogovor,
+				ef.dog_time
+				FROM ester_finriski as ef
+			{{WHERE}}
+			ORDER BY id DESC';
+
+		if (in_array($role, array(Roles::ROLE_SUPERADMIN, Roles::ROLE_ADMIN)))
+		{
+			$sql = strtr($sql, array('{{WHERE}}' => ''));
+		}
+		else
+		{
+			$user = new Users();
+			$user->getUserById($this->getDI()->get('session')->get('userid'));
+
+			$userIds = Users::extractUserIds($user->getSubordinateUsers());
+			$userIds[] = $user->id;
+			$sql = strtr($sql, array('{{WHERE}}' => 'WHERE userid IN (' . implode(',', $userIds) . ')'));
+		}
+
+		return $this->getDI()->get('db')->fetchAll($sql, Phalcon\Db::FETCH_ASSOC);
     }
 
-    public function getDogById(){
-        $role = $this->getDI()->get('session')->get("role");
-        if($role<3){
-            $dog = $this->getDI()->get('db')->fetchOne('Select * from ester_finriski where id = :id limit 1', Phalcon\Db::FETCH_ASSOC, array('id' => $this->id));
-        }else{
-            $userid = $this->getDI()->get('session')->get("userid");
-            $dog = $this->getDI()->get('db')->fetchOne('Select * from ester_finriski where id = :id AND userid = :userid limit 1', Phalcon\Db::FETCH_ASSOC,
-                array('id' => $this->id, 'userid'=>$userid));
-        }
+    public function getDogById() {
+		$role = $this->getDI()->get('session')->get("role");
+		$sql = 'Select * from ester_finriski where {{CONDITION}} limit 1';
+		if (in_array($role, array(Roles::ROLE_SUPERADMIN, Roles::ROLE_ADMIN)))
+		{
+			$sql = strtr($sql, array('{{CONDITION}}'=>' id = :id'));
+		}
+		else
+		{
+			$user = new Users();
+			$user->getUserById($this->getDI()->get('session')->get("userid"));
+
+			$userIds = Users::extractUserIds($user->getSubordinateUsers());
+			$sql = strtr($sql, array('{{CONDITION}}'=>' id = :id AND userid IN (' . implode(',', $userIds) . ')'));
+		}
+
+		$dog = $this->getDI()->get('db')->fetchOne($sql, Phalcon\Db::FETCH_ASSOC, array('id' => $this->id));
+
         if($dog){
             $this->familia = $dog["familia"];
             $this->imya =  $dog["imya"];

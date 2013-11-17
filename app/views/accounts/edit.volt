@@ -45,7 +45,7 @@
         </div>
         <div class="span3 ">
             <label>Роль:</label>
-            <select  name="role" class="span12">
+            <select  name="role" class="span12" onchange="javascript: roleChanging(this);">
                 {% for role in roles %}
                     {% if sesRole <= role['id'] %}
                         {% if curRole == role['id'] %}
@@ -68,14 +68,31 @@
                     <option value = "1" selected>Да</option>
                     <option value = "0">Нет</option>
                 {% endif %}
-
             </select>
         </div>
+	
+		<div class="span6 subordinate-users {% if subordinateRoles[curRole] is not defined %} hidden {% endif %}">
+			<fieldset id="subordinate_users" {% if subordinateRoles[curRole] is not defined %} disabled="disabled" {% endif %}>
+			<label>Пользователи в подчинении</label>
+			<table class="table table-bordered table-stripped small">
+			<tbody>
+				{% for usr in users %}
+				<tr id="user_role_{{usr['role']}}">
+					<td><input id="subuser_{{ usr['id'] }}" type="checkbox" name="subusers[{{ usr['id'] }}]" value="1" {% if subordinateUsers['users'][usr['id']] == usr['id'] %} checked {% endif %}/></td>
+					<td><label for="subuser_{{ usr['id'] }}">{{ usr['firstname'] }} {{ usr['secondname'] }}</label></td>
+					<td>{{ usr['role'] }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+			</table>
+			</fieldset>
+		</div>
 
         <div class="span12 text-center" style="padding-top: 25px; padding-bottom: 25px;">
             <button type="submit" class="btn btn-primary">Обновить данные пользователя</button>
             <a href="/accounts/" class="btn">Отменить</a>
         </div>
+
     </form>
 </div>
 {% endblock %}

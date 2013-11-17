@@ -134,6 +134,22 @@ function FloatToSamplesInWordsRus(fAmount)
     return arrRet.join(" ");
 }
 
+function roleChanging(self)
+{
+	var withSubroles = [3, 4, 5];
+	var role = $(self).find("option:selected").val();
+	$('#subordinate_users').prop('disabled', true);
+	$('.subordinate-users').addClass('hidden');
+	for(var i=0; i<withSubroles.length; i++)
+	{
+		if (withSubroles[i] == role)
+		{
+			$('#subordinate_users').prop('disabled', false);
+			$('.subordinate-users').removeClass('hidden');
+		}
+	}
+}
+
 
 $(document).ready(function(){
     //модалка для входа в систему
@@ -201,4 +217,4 @@ $(document).ready(function(){
         }
     })
     $("#formAddDogFinR input[name=start_insur],#formAddDogFinR input[name=end_insur]").datepicker({format:"dd/mm/yyyy", weekStart:1, viewMode:1});
-})
+});

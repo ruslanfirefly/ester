@@ -11,6 +11,9 @@
         <form class="span12 fireflyForm" id = "formAddDogFinR" action="/finriski/edit/{{ dogovor.id }}/" method="post" >
             <div class="row-fluid text-center">
                 <h3> Редактирование договора {{ dogovor.dogovor }} от {{ dogovor.time }}</h3>
+				{% if dogovor.user != currentUser.id %}
+					<h5>Куратор договора: {{ currentUser.firstName }} {{ currentUser.secondName }}</h5>
+				{% endif %}
             </div>
             <div class="row-fluid text-center">
                 <div class="span12">
