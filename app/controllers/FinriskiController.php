@@ -25,7 +25,7 @@ class FinriskiController extends Phalcon\Mvc\Controller {
 
     public function indexAction(){
 		$dogovors = new Finrisk();
-		$currentPage = (int) $_GET['page'];
+		$currentPage = (isset($_GET['page']) ? ((int) $_GET['page']) : 1);
 		$allDogovors = $dogovors->getAllDogovors();
 		var_dump($allDogovors);
 		$paginator = new \Phalcon\Paginator\Adapter\NativeArray(
