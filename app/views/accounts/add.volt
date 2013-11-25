@@ -55,7 +55,7 @@
         </div>
         <div class="span3">
             <label>Роль:</label>
-            <select  name="role" class="span12">
+            <select  name="role" class="span12" onchange="javascript: roleChanging(this);">
                 {% for role in roles %}
                     {% if sesRole <= role['id'] %}
                         {% if curRole == role['id'] %}
@@ -84,6 +84,24 @@
 
             </select>
         </div>
+		<div class="span6 subordinate-users {% if subordinateRoles[curRole] is not defined %} hidden {% endif %}">
+			<fieldset id="subordinated_to">
+				<label>Прикреплен за пользователем:</label>
+				<select class="disabled-users" style="display: none">
+				</select>
+				<select name="subordinated_to[]" multiple class="span12">
+					{% for usr in users %}
+						<option role="{{usr['role_id']}}" value="{{usr['id']}}" {% if ownerUser[usr['id']] is defined %} selected {% endif %}>
+							{% if usr['firstname'] == '' and usr['secondname'] == ''%}
+								{{usr['username']}}
+							{% else %}
+								{{usr['firstname']}} {{usr['secondname']}}
+							{% endif %}
+						</option>
+					{% endfor %}
+				</select>
+			</fieldset>
+		</div>
         </div>
         <div class="span12 text-center" style="padding-top: 25px; padding-bottom: 25px;">
             <button type="submit" class="btn btn-primary">Добавить пользователя</button>

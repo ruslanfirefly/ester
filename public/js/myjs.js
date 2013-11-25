@@ -136,24 +136,58 @@ function FloatToSamplesInWordsRus(fAmount)
 
 function roleChanging(self)
 {
-	var withSubroles = [3, 4, 5];
 	var role = $(self).find("option:selected").val();
-	$('#subordinate_users').prop('disabled', true);
-	$('.subordinate-users').addClass('hidden');
-	for(var i=0; i<withSubroles.length; i++)
-	{
-		if (withSubroles[i] == role)
-		{
-			$('#subordinate_users').prop('disabled', false);
-			$('.subordinate-users').removeClass('hidden');
-		}
-	}
+	$('#subordinated_to').prop('disabled', true);
+	$.ajax({
+		'url': '/accounts/ajaxPrivilegedUsers/' + role,
+		'data': {
+			't': (new Date()).getTime(),
+		},
+		'dataType': 'json',
+		'success': function (result)
+			{
+				if (result && result.success)
+				{
+					var sto = $('#subordinated_to select[name=subordinated_to\\[\\]]');
+					sto.find('option').prop('disabled', true);
+					for(var i=result.users.length-1; i>=0; i--)
+					{
+						var uid = result.users[i].id;
+						sto.find('option[role='+ result.users[i].role_id +']').prop('disabled', false);
+					}
+				}
+				else
+				{
+					alert("Произошла ошибка запроса");
+				}
+				$('#subordinated_to').prop('disabled', false);
+			},
+		'error': function ()
+			{
+				alert('Произошла ошибка при загрузке доступных ролей');
+				$('#subordinated_to').prop('disabled', false);
+			}
+	});
+	return true;
 }
 
 
 $(document).ready(function(){
+	//alert($('select[name=role]').change());
+	$('#subordinated_to select[name=subordinated_to\\[\\]]')
+		.find('option')
+			.prop('disabled', true)
+		.end()
+		.find('option:selected')
+			.prop('disabled', false)
+		.end();
+	$('select[name=role]').change();
+	
     //модалка для входа в систему
-    $('#loginModal').modal("show");
+	if ($('#loginModal').length > 0)
+	{
+    	$('#loginModal').modal("show");
+	}
     // все тултипы в системе
     $("body").on("mouseenter","*[data-toggle=tooltip]",function(){
         $(this).tooltip('show');

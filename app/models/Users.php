@@ -15,6 +15,8 @@ class Users extends Phalcon\Mvc\Model {
 
 	public $subordinateUsers;
 
+	public $subordinatedTo;
+
 
     public function getAllUsers(){
         $this->role = $this->getDI()->get('session')->get('role');
@@ -45,15 +47,68 @@ class Users extends Phalcon\Mvc\Model {
 									//	array('roles' => implode(',', $subRolesIds))
 								);
     }
-    public function saveNewUser(){
-        return $this->getDI()->get('db')->insert('ester_users',
-                                                       array($this->login,$this->firstName,$this->secondName,$this->role,$this->city,$this->dogovor,$this->email,md5(sha1($this->pass)+md5($this->login)),$this->active),
-                                                       array("username","firstname","secondname","role","city","dogovor","email","token","active")
-                                                       );
 
+	/**
+	 * saveNewUser 
+	 * 
+	 * @return boolean
+	 */
+	public function saveNewUser()
+	{
+		try {
+			$connection = $this->getDI()->get('db');
 
+			$connection->begin();
+
+			$status = $connection->insert('ester_users',
+				array($this->login,$this->firstName,$this->secondName,$this->role,$this->city,
+					$this->dogovor,$this->email,md5(sha1($this->pass)+md5($this->login)),$this->active
+				),
+				array("username","firstname","secondname","role","city",
+					"dogovor","email","token","active"
+				)
+			);
+
+			if ($status && is_array($this->subordinatedTo))
+			{
+				$uid = $connection->lastInsertId();
+				foreach($this->subordinatedTo as $usr)
+				{
+					if (!empty($usr))
+					{
+						$status = $connection->insert('ester_subordinate_users',
+							array($usr, $uid),
+							array('user_id', 'subordinate_user_id')
+						);	
+						if (!$status) break;
+					}
+				}
+
+				if ($status)
+				{
+					$connection->commit();
+				}
+			}
+
+			// Check twice for non-success finish
+			if (!$status)
+			{
+				$connection->rollback();
+			}
+		}
+		catch (Exception $e)
+		{
+			$connection->rollback();
+			$msg = $e->getMessage();
+			var_dump($msg);
+			return false;
+		}
+
+		return $status;
     }
-    public function getUserById($id){
+
+	public function getUserById($id)
+	{
         $arrUser = $this->getDI()->get('db')->fetchOne('SELECT ester_users.id,
                                   ester_users.username,
                                   ester_users.firstname,
@@ -75,35 +130,44 @@ class Users extends Phalcon\Mvc\Model {
 		$this->active = $arrUser['active'];
     }
 
-    public function updateUser($id){
-        return  $this->getDI()->get('db')->update('ester_users',
-                                                        array("firstname","secondname","role","city","dogovor","email","active"),
-														array(
-															$this->firstName,
-															$this->secondName,
-															$this->role,
-															$this->city,
-															$this->dogovor,
-															$this->email,
-															$this->active
-														),
-                                                        'id = "' . $id . '"');
-	}
-
-	public function updateSubordinateUsers($id, $subordinateUsers)
+	public function updateUser($id)
 	{
 		try {
 			$connection = $this->getDI()->get('db');
 
 			$connection->begin();
 
-			$connection->delete('ester_subordinate_users', 'user_id = "' . $id . '"');
-			foreach($subordinateUsers as $susr)
-			{
-				$connection->insert('ester_subordinate_users', array($id, $susr), array('user_id', 'subordinate_user_id'));
+        	$status = $connection->update('ester_users',
+							array("firstname","secondname","role","city","dogovor","email","active"),
+							array(
+								$this->firstName,
+								$this->secondName,
+								$this->role,
+								$this->city,
+								$this->dogovor,
+								$this->email,
+								$this->active
+							),
+							'id = "' . $id . '"');
+
+			if ($status && is_array($this->subordinatedTo)) {
+				$connection->delete('ester_subordinate_users', 'subordinate_user_id = "' . $id . '"');
+				foreach($this->subordinatedTo as $usr)
+				{
+					$status = $connection->insert('ester_subordinate_users', array($usr, $id), array('user_id', 'subordinate_user_id'));
+					if (!$status) break;
+				}
+
+				if ($status)
+				{
+					$connection->commit();
+				}
 			}
 
-			$connection->commit();
+			if (!$status)
+			{
+				$connection->rollback();
+			}
 		}
 		catch(Exception $e)
 		{
@@ -147,6 +211,7 @@ class Users extends Phalcon\Mvc\Model {
 
 		return array_unique($userIds);
 	}
+
 	public function getSubordinateUsers()
 	{
 		if ($this->id != NULL)
@@ -180,6 +245,31 @@ class Users extends Phalcon\Mvc\Model {
 			}
 
 			return $subordinateUsers;
+		}
+
+		return array();
+	}
+
+	public function getSubordinatedTo()
+	{
+		if ($this->id != NULL)
+		{
+			$rawSubordinatedTo = $this->getDI()->get('db')->fetchAll("
+				SELECT
+					DISTINCT user_id
+				FROM ester_subordinate_users esu
+				WHERE esu.subordinate_user_id = :uid",
+				Phalcon\Db::FETCH_ASSOC,
+				array('uid' => $this->id)
+			);
+
+			$subordinatedTo = array();
+			foreach($rawSubordinatedTo as $rst)
+			{
+				$subordinatedTo[$rst['user_id']] = $rst['user_id'];
+			}
+
+			return $subordinatedTo;
 		}
 
 		return array();

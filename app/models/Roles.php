@@ -45,6 +45,32 @@ class Roles extends Phalcon\Mvc\Model {
 		return (isset($roles[$roleId]) ? $roles[$roleId] : array());
 	}
 
+	static public function getPrivilegedRoles($roleId)
+	{
+		$roles = self::getRoleSubroles($roleId);
+		$roles[] = $roleId;
+		$roles = array_diff(array(
+			self::ROLE_AGENT,
+			self::ROLE_BROKER,
+			self::ROLE_FINBROKER,
+			self::ROLE_MANAGER,
+			self::ROLE_ADMIN,
+			self::ROLE_SUPERADMIN
+		), $roles);
+		$roles = array_flip($roles);
+		if (($roleId == Roles::ROLE_BROKER) && isset($roles[Roles::ROLE_FINBROKER]))
+		{
+			unset($roles[Roles::ROLE_FINBROKER]);
+		}
+		if (($roleId == Roles::ROLE_FINBROKER) && isset($roles[Roles::ROLE_BROKER]))
+		{
+			unset($roles[Roles::ROLE_BROKER]);
+		}
+		$roles = array_values(array_flip($roles));
+
+		return $roles;
+	}
+
 	public function getSubordinateRoleUsers($roleIds)
 	{
 		$subRoles = array();
@@ -90,12 +116,19 @@ class Roles extends Phalcon\Mvc\Model {
 		return $this;
 	}
 
-    public function getAllRoles() {
-		$roleIds = self::getRoleSubroles($this->id);
-		if (in_array($role, array(Roles::ROLE_SUPERADMIN, Roles::ROLE_ADMIN)))
+	public function getAllRoles()
+	{
+		$role    = isset($this->id) ? $this->id : $this->getDI()->get('session')->get('role');
+		$roleIds = self::getRoleSubroles($role);
+		if (in_array($role, array(Roles::ROLE_SUPERADMIN, Roles::ROLE_ADMIN, Roles::ROLE_MANAGER)))
 		{
 			$roleIds[] = $role;
 		}
+		if (empty($roleIds))
+		{
+			return array();
+		}
+
         return $this->getDI()->get('db')->fetchAll('SELECT id, rolename FROM ester_rolename WHERE id IN (' . implode(',', $roleIds) . ') ORDER BY id');
     }
 }

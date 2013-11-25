@@ -72,16 +72,33 @@
         </div>
 	
 		<div class="span6 subordinate-users {% if subordinateRoles[curRole] is not defined %} hidden {% endif %}">
+			<fieldset id="subordinated_to">
+				<label>Прикреплен за пользователем:</label>
+				<select class="disabled-users" style="display: none">
+				</select>
+				<select name="subordinated_to[]" multiple class="span12">
+					{% for usr in users %}
+						<option role="{{usr['role_id']}}" value="{{usr['id']}}" {% if ownerUser[usr['id']] is defined %} selected {% endif %}>
+							{% if usr['firstname'] == '' and usr['secondname'] == ''%}
+								{{usr['username']}}
+							{% else %}
+								{{usr['firstname']}} {{usr['secondname']}}
+							{% endif %}
+						</option>
+					{% endfor %}
+				</select>
+			</fieldset>
 			<fieldset id="subordinate_users" {% if subordinateRoles[curRole] is not defined %} disabled="disabled" {% endif %}>
 			<label>Пользователи в подчинении</label>
 			<table class="table table-bordered table-stripped small">
 			<tbody>
 				{% for usr in users %}
-				<tr id="user_role_{{usr['role']}}">
-					<td><input id="subuser_{{ usr['id'] }}" type="checkbox" name="subusers[{{ usr['id'] }}]" value="1" {% if subordinateUsers['users'][usr['id']] == usr['id'] %} checked {% endif %}/></td>
-					<td><label for="subuser_{{ usr['id'] }}">{{ usr['firstname'] }} {{ usr['secondname'] }}</label></td>
-					<td>{{ usr['role'] }}</td>
-				</tr>
+					{% if subordinateUsers['users'][usr['id']] is defined %}
+					<tr id="user_role_{{usr['role']}}">
+						<td><a href="/accounts/edit/{{ usr['id'] }}">{{ usr['firstname'] }} {{ usr['secondname'] }}</a></td>
+						<td>{{ usr['role'] }}</td>
+					</tr>
+					{% endif %}
 				{% endfor %}
 			</tbody>
 			</table>

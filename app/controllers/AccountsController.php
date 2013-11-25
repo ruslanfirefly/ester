@@ -54,6 +54,14 @@ class AccountsController extends Phalcon\Mvc\Controller{
             $user->pass = trim($this->request->getPost('token'));
             $token2 = trim($this->request->getPost('token2'));
 
+			$user->subordinatedTo = $this->request->getPost('subordinated_to');
+			$user->subordinatedTo = array_values( is_array($user->subordinatedTo) ? $user->subordinatedTo : array($user->subordinatedTo) );
+
+			if ((!empty($user->subordinatedTo)) && (!preg_match('/^[0-9]*$/', implode('', $user->subordinatedTo))))
+			{
+				$messages[] = 'Неверно указаны пользователи';
+			}
+
             if($user->login===''){
                $messages[] = 'Заполните поле Логин';
             }
@@ -74,7 +82,7 @@ class AccountsController extends Phalcon\Mvc\Controller{
             }
             if(!count($messages)){
                 if($user->saveNewUser()){
-                    $this->response->redirect('accounts/');
+					$this->response->redirect('accounts/');
                 }else{
                     $messages[] = 'Такой логин уже есть';
                 }
@@ -94,8 +102,34 @@ class AccountsController extends Phalcon\Mvc\Controller{
 		$this->view->setVar("active",$user->active);
 
 		$this->view->setVar("users", $user->getAllUsers());
-		//$this->view->setVar("subordinateUsers", $user->getSubordinateUsers());
-    }
+	}
+
+	public function ajaxPrivilegedUsersAction($roleId)
+	{
+		$roles = new Roles();
+		$roles = $roles->getPrivilegedRoles($roleId);
+
+		$users = new Users();
+		$users->getUserById($this->getDI()->get('session')->get('iduser'));
+		$users = $users->getAllUsers();
+		foreach($users as $key => $user)
+		{
+			if (in_array($user['role_id'], $roles))
+			{
+				$users[$key] = array(
+					'id' => $user['id'],
+					'role_id' => $user['role_id'],
+				);
+			}
+			else
+			{
+				unset($users[$key]);
+			}
+		}
+
+		header("Cache-Control: no-cache, must-revalidate");
+		echo json_encode(array('success'=>true, 'users' => array_values($users)));
+	}
 
     public function editAction($iduser){
         $cites = new City();
@@ -120,10 +154,11 @@ class AccountsController extends Phalcon\Mvc\Controller{
             $user->dogovor = htmlspecialchars(strip_tags(trim($this->request->getPost('dogovor'))));
             $user->email = trim($this->request->getPost('email'));
             $user->active = trim($this->request->getPost('active'));
-			$subordinateUsers = $this->request->getPost('subusers');
-			$subordinateUsers = array_keys($subordinateUsers);
 
-			if (!preg_match('/^[0-9]*$/', implode('', $subordinateUsers)))
+			$user->subordinatedTo = $this->request->getPost('subordinated_to');
+			$user->subordinatedTo = array_values( is_array($user->subordinatedTo) ? $user->subordinatedTo : array($user->subordinatedTo) );
+
+			if (!preg_match('/^[0-9]*$/', implode('', $user->subordinatedTo)))
 			{
 				$messages[] = 'Неверно указаны пользователи';
 			}
@@ -132,14 +167,7 @@ class AccountsController extends Phalcon\Mvc\Controller{
             }
             if(!count($messages)){
                 if($user->updateUser($iduser)){
-					if ($user->updateSubordinateUsers($iduser, $subordinateUsers))
-					{
-	                    $this->response->redirect('accounts/');
-					}
-					else
-					{
-						$messages[] = 'Ошибка при изменении списка подчиненных пользователей';
-					}
+	                $this->response->redirect('accounts/');
                 }else{
                     $messages[] = 'Ошибка при обновлении';
                 }
@@ -156,14 +184,17 @@ class AccountsController extends Phalcon\Mvc\Controller{
         $this->view->setVar("active",$user->active);
         $this->view->setVar("id",$iduser);
 
+		// TODO: Get subordinated to
 		$subordinateRoles = array(
 			Roles::ROLE_MANAGER => $roles->getSubordinateRoleUsers(Roles::ROLE_MANAGER),
 			Roles::ROLE_FINBROKER => $roles->getSubordinateRoleUsers(Roles::ROLE_FINBROKER),
 			Roles::ROLE_BROKER => $roles->getSubordinateRoleUsers(Roles::ROLE_BROKER),
 		);
 		$this->view->setVar("users", $roles->getSubordinateRoleUsers(array_keys($subordinateRoles)));
+		$this->view->setVar('users', $user->getAllUsers());
 		$this->view->setVar("subordinateRoles", $subordinateRoles);
 		$this->view->setVar("subordinateUsers", $user->getSubordinateUsers());
+		$this->view->setVar("ownerUser", $user->getSubordinatedTo());
     }
 
     public function passeditAction($iduser){
