@@ -66,7 +66,8 @@ class Finrisk extends Phalcon\Mvc\Model{
 
     }
 
-    public function getAllDogovors(){
+	public function getAllDogovors($filter = array())
+	{
 		$role = $this->getDI()->get('session')->get("role");
 		$sql = 'SELECT ef.id,
                 ef.familia,
@@ -78,9 +79,32 @@ class Finrisk extends Phalcon\Mvc\Model{
 			{{WHERE}}
 			ORDER BY id DESC';
 
+		$condition = array();
+		if (!empty($filter))
+		{
+			if (isset($filter['date']['from']) && (!empty($filter['date']['from'])))
+			{
+				$condition[] = 'ef.dog_time2 >= \'' . mysql_escape_string($filter['date']['from']) . ' 00:00:00\'';
+			}
+			if (isset($filter['date']['until']) && (!empty($filter['date']['until'])))
+			{
+				$condition[] = 'ef.dog_time2 <= \'' . mysql_escape_string($filter['date']['until']) . ' 00:00:00\'';
+			}
+
+			if (isset($filter['orderno']['from']) && (!empty($filter['orderno']['from'])))
+			{
+				$condition[] = 'TRIM(SUBSTRING_INDEX(dogovor, \'№\', -1)) >= ' . mysql_escape_string($filter['orderno']['from']);
+			}
+			if (isset($filter['orderno']['until']) && (!empty($filter['orderno']['until'])))
+			{
+				$condition[] = 'TRIM(SUBSTRING_INDEX(dogovor, \'№\', -1)) <= ' . mysql_escape_string($filter['orderno']['until']);
+			}
+		}
+
 		if (in_array($role, array(Roles::ROLE_SUPERADMIN, Roles::ROLE_ADMIN)))
 		{
-			$sql = strtr($sql, array('{{WHERE}}' => ''));
+			$condition = (empty($condition) ? '' : 'WHERE (' . implode(') AND (', $condition) . ')');
+			$sql = strtr($sql, array('{{WHERE}}' => $condition));
 		}
 		else
 		{
@@ -89,7 +113,11 @@ class Finrisk extends Phalcon\Mvc\Model{
 
 			$userIds = Users::extractUserIds($user->getSubordinateUsers());
 			$userIds[] = $user->id;
-			$sql = strtr($sql, array('{{WHERE}}' => 'WHERE userid IN (' . implode(',', $userIds) . ')'));
+
+			$condition[] = 'userid IN (' . implode(',', $userIds) . ')';
+			$condition = 'WHERE (' . implode(') AND (', $condition) . ')';
+
+			$sql = strtr($sql, array('{{WHERE}}' => $condition));
 		}
 
 		return $this->getDI()->get('db')->fetchAll($sql, Phalcon\Db::FETCH_ASSOC);

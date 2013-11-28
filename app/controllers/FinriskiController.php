@@ -3,7 +3,8 @@ use Phalcon\Validation\Validator\PresenceOf as PresenceOf;
 
 class FinriskiController extends Phalcon\Mvc\Controller {
 
-    public function initialize(){
+	public function initialize()
+	{
         if(!$this->session->has("login")){
             $this->response->redirect('login/');
         }
@@ -23,11 +24,12 @@ class FinriskiController extends Phalcon\Mvc\Controller {
         $this->view->setVar("menuforactionmiddle", '<li><a href="/finriski/add/">Добавить договор.</a> </li>');
     }
 
-    public function indexAction(){
+	public function indexAction()
+	{
 		$dogovors = new Finrisk();
-		$currentPage = (isset($_GET['page']) ? ((int) $_GET['page']) : 1);
-		$allDogovors = $dogovors->getAllDogovors();
-		var_dump($allDogovors);
+		$filter      = (isset($_GET['filter']) ? $_GET['filter'] : array());
+		$currentPage = (isset($_GET['filter']['page']) ? ((int) $_GET['filter']['page']) : 1);
+		$allDogovors = $dogovors->getAllDogovors($filter);
 		$paginator = new \Phalcon\Paginator\Adapter\NativeArray(
 			array(
 				"data" => $allDogovors,
@@ -37,9 +39,11 @@ class FinriskiController extends Phalcon\Mvc\Controller {
 		);
 
 		$this->view->setVar("page", $paginator->getPaginate());
+		$this->view->setVar('filter', $filter);
     }
 
-    public  function addAction(){
+	public  function addAction()
+	{
         $this->di->get('db')->begin();
         $dogovor = new Finrisk();
         $message = array();
@@ -102,8 +106,10 @@ class FinriskiController extends Phalcon\Mvc\Controller {
 
     }
 
-    public function printAction($id=false){
-        if (!$id || !preg_match('/^\d{1,}$/',$id)){
+	public function printAction($id=false)
+	{
+		if (!$id || !preg_match('/^\d{1,}$/',$id))
+		{
             $this->response->redirect('finriski/');
         }
         $dog = new Finrisk();
