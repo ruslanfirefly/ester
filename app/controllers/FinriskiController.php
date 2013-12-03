@@ -46,6 +46,8 @@ class FinriskiController extends Phalcon\Mvc\Controller {
 	{
         $this->di->get('db')->begin();
         $dogovor = new Finrisk();
+		$user = new Users();
+		$user->getUserById($this->session->get('userid'));
         $message = array();
         if($this->request->isPost()){
             $validator = new Phalcon\Validation();
@@ -82,7 +84,15 @@ class FinriskiController extends Phalcon\Mvc\Controller {
             $dogovor->nomer_pass = $this->request->getPost("nomer");
             $dogovor->vidan_pass = $this->request->getPost("pass_vidan");
             $dogovor->propiska = $this->request->getPost("adress");
-            $dogovor->tarif = $this->request->getPost("tariff");
+			var_dump($user);
+			if ($user->tariff_rate == NULL)
+			{
+	            $dogovor->tarif = $this->request->getPost("tariff");
+			}
+			else
+			{
+				$dogovor->tarif = $user->tariff_rate;
+			}
             $dogovor->summa = $this->request->getPost("summa");
             $dogovor->summa_pro = $this->request->getPost("summa_pro");
             $dogovor->insur_from = $this->request->getPost("start_insur");
@@ -121,35 +131,35 @@ class FinriskiController extends Phalcon\Mvc\Controller {
                 try{
                 $document = new DocumentOpenXML('../app/lib/polisFR.docx');
                 $documentData = array(
-                    't1'        => $dog->dogovor,
-                    't2' => $temp3[0].' '.LibFunc::month($temp3[1]).' '.$temp3[2].'г.',
-                    't3'      => $dog->familia,
-                    't4'         => $dog->imya,
-                    't5'    => $dog->otchestvo,
-                    't6'     => $dog->propiska,
-                    't7'         => $temp1[0],
-                    't8'       => LibFunc::month($temp1[1]),
-                    't9'        => $temp1[2],
-                    't010'         => $temp2[0],
-                    't011'       => LibFunc::month($temp2[1]),
-                    't012'        => $temp2[2],
-                    't013'        => $dog->summa,
-                    't014'    => $dog->summa_pro,
-                    't015'      => $dog->premiya,
-                    't016'  => $dog->premiya_pro,
-                    't017'   => $dog->seria_pass,
-                    't018'   => $dog->nomer_pass,
-                    't019'   => $dog->vidan_pass,
-                    't020'        => $dog->dateB,
-                    't021'      => $dog->tel,
+                    't1'   => $dog->dogovor,
+                    't2'   => $temp3[0].' '.LibFunc::month($temp3[1]).' '.$temp3[2].'г.',
+                    't3'   => $dog->familia,
+                    't4'   => $dog->imya,
+                    't5'   => $dog->otchestvo,
+                    't6'   => $dog->propiska,
+                    't7'   => $temp1[0],
+                    't8'   => LibFunc::month($temp1[1]),
+                    't9'   => $temp1[2],
+                    't010' => $temp2[0],
+                    't011' => LibFunc::month($temp2[1]),
+                    't012' => $temp2[2],
+                    't013' => $dog->summa,
+                    't014' => $dog->summa_pro,
+                    't015' => $dog->premiya,
+                    't016' => $dog->premiya_pro,
+                    't017' => $dog->seria_pass,
+                    't018' => $dog->nomer_pass,
+                    't019' => $dog->vidan_pass,
+                    't020' => $dog->dateB,
+                    't021' => $dog->tel,
                 );
                $document->set($documentData);
                $this->response->setHeader('Content-type','application/msword');
                $this->response->setHeader('Content-Disposition','attachment; filename="polis_fin_riski.docx"');
                echo $document;
-                }catch (Exception $e){
+               }catch (Exception $e){
                     echo $e->getMessage();
-                }
+               }
     }
 
     public function editAction($id=false){
@@ -199,7 +209,14 @@ class FinriskiController extends Phalcon\Mvc\Controller {
             $dogovor->nomer_pass = $this->request->getPost("nomer");
             $dogovor->vidan_pass = $this->request->getPost("pass_vidan");
             $dogovor->propiska = $this->request->getPost("adress");
-            $dogovor->tarif = $this->request->getPost("tariff");
+			if ($user->tariff_rate == null)
+			{
+	            $dogovor->tarif = $this->request->getpost("tariff");
+			}
+			else
+			{
+				$dogovor->tarif = $user->tariff_rate;
+			}
             $dogovor->summa = $this->request->getPost("summa");
             $dogovor->summa_pro = $this->request->getPost("summa_pro");
             $dogovor->insur_from = $this->request->getPost("start_insur");

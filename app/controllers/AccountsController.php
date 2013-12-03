@@ -14,6 +14,7 @@ class AccountsController extends Phalcon\Mvc\Controller{
         $this->view->setVar("mainTitle", 'Пользователи');
         $this->view->setVar("topLogin", $this->session->get("login"));
         $this->view->setVar("sesRole", $this->session->get("role"));
+		//$this->view->setVar("user", $user);
         $this->view->setVar("menuforactionmiddle", '<li><a href="/accounts/add/">Добавить пользователя.</a> </li>');
         $this->view->setVar("menuforactionright", '<li><a href="/accounts/">Пользователи</a> </li>');
     }
@@ -40,6 +41,7 @@ class AccountsController extends Phalcon\Mvc\Controller{
         $this->view->setVar("cites", $cites->getAllCitys());
         $this->view->setVar("roles", $roles->getAllRoles());
         $user = new Users();
+		$dogovor = new Finrisk();
         $token2 ='';
         $messages = array();
         if($this->request->getMethod() === "POST"){
@@ -52,6 +54,10 @@ class AccountsController extends Phalcon\Mvc\Controller{
             $user->email = trim($this->request->getPost('email'));
             $user->active = trim($this->request->getPost('active'));
             $user->pass = trim($this->request->getPost('token'));
+			if (in_array(trim($this->request->getPost('tariff')), Finrisk::getTariffRates()))
+			{
+				$user->tariff_rate = floatval($this->request->getPost('tariff'));
+			}
             $token2 = trim($this->request->getPost('token2'));
 
 			$user->subordinatedTo = $this->request->getPost('subordinated_to');
@@ -89,17 +95,19 @@ class AccountsController extends Phalcon\Mvc\Controller{
             }
 
         }
+		$this->view->setVar("userModel", $user);
         $this->view->setVar("messages",$messages);
-        $this->view->setVar("login",$user->login);
-        $this->view->setVar("token",$user->pass);
+        //$this->view->setVar("login",$user->login);
+        //$this->view->setVar("token",$user->pass);
         $this->view->setVar("token2",$token2);
-        $this->view->setVar("firstname",$user->firstName);
-        $this->view->setVar("curCity",$user->city);
-        $this->view->setVar("dogovor",$user->dogovor);
-        $this->view->setVar("secondname",$user->secondName);
-        $this->view->setVar("curRole",$user->role);
-        $this->view->setVar("email",$user->email);
-		$this->view->setVar("active",$user->active);
+        //$this->view->setVar("firstname",$user->firstName);
+        //$this->view->setVar("curCity",$user->city);
+        //$this->view->setVar("agentDogovor",$user->dogovor);
+		$this->view->setVar('dogovor', $dogovor);
+        //$this->view->setVar("secondname",$user->secondName);
+        //$this->view->setVar("curRole",$user->role);
+        //$this->view->setVar("email",$user->email);
+		//$this->view->setVar("active",$user->active);
 
 		$this->view->setVar("users", $user->getAllUsers());
 	}
@@ -136,13 +144,19 @@ class AccountsController extends Phalcon\Mvc\Controller{
         $roles = new Roles();
         $user = new Users();
 		$user->getUserById($iduser);
+		if ($user->id == NULL)
+		{
+			$this->response->redirect('');
+		}
 		$role = new Roles(); 
 		$role = $role->getRoleById($this->session->get('role'));
+		$dogovor = new Finrisk();
 
         $this->view->setVar("cites", $cites->getAllCitys());
 		$this->view->setVar("roles", $role->getAllRoles()); // role with policies, roles - without
 
-        if($role->id > $user->role){
+		if($role->id > $user->role)
+		{
             $this->response->redirect('');
         }
         $messages = array();
@@ -154,6 +168,11 @@ class AccountsController extends Phalcon\Mvc\Controller{
             $user->dogovor = htmlspecialchars(strip_tags(trim($this->request->getPost('dogovor'))));
             $user->email = trim($this->request->getPost('email'));
             $user->active = trim($this->request->getPost('active'));
+			$user->tariff_rate = new Phalcon\Db\RawValue('NULL');
+			if (in_array(trim($this->request->getPost('tariff')), array_keys(Finrisk::getTariffRates())))
+			{
+				$user->tariff_rate = floatval($this->request->getPost('tariff'));
+			}
 
 			$user->subordinatedTo = $this->request->getPost('subordinated_to');
 			$user->subordinatedTo = array_values( is_array($user->subordinatedTo) ? $user->subordinatedTo : array($user->subordinatedTo) );
@@ -173,16 +192,10 @@ class AccountsController extends Phalcon\Mvc\Controller{
                 }
             }
         }
+
+		$this->view->setVar("userModel", $user);
         $this->view->setVar("messages",$messages);
-        $this->view->setVar("login",$user->login);
-        $this->view->setVar("firstname",$user->firstName);
-        $this->view->setVar("curCity",$user->city);
-        $this->view->setVar("dogovor",$user->dogovor);
-        $this->view->setVar("secondname",$user->secondName);
-        $this->view->setVar("curRole",$user->role);
-        $this->view->setVar("email",$user->email);
-        $this->view->setVar("active",$user->active);
-        $this->view->setVar("id",$iduser);
+		$this->view->setVar('dogovor', $dogovor);
 
 		// TODO: Get subordinated to
 		$subordinateRoles = array(

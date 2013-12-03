@@ -9,14 +9,24 @@ class Users extends Phalcon\Mvc\Model {
     public $pass;
     public $active;
     public $role;
+    public $role_id;
     public $city;
     public $dogovor;
 	public $email;
+	public $tariff_rate;
 
 	public $subordinateUsers;
 
 	public $subordinatedTo;
 
+
+	public static function getActivationValues()
+	{
+		return array(
+			0 => 'Нет',
+			1 => 'Да',
+		);
+	}
 
     public function getAllUsers(){
         $this->role = $this->getDI()->get('session')->get('role');
@@ -40,7 +50,8 @@ class Users extends Phalcon\Mvc\Model {
                                   ec.city,
                                   eu.dogovor,
                                   eu.email,
-								  eu.active FROM ester_users as eu, ester_city as ec, ester_rolename as er
+								  eu.active,
+								  eu.tariff_rate FROM ester_users as eu, ester_city as ec, ester_rolename as er
 								  WHERE eu.city = ec.id AND er.id = eu.role 
 								    AND eu.role IN (' . implode(',', $subRolesIds) . ')', Phalcon\Db::FETCH_ASSOC
 								    //AND eu.role IN (:roles)', Phalcon\Db::FETCH_ASSOC,
@@ -62,10 +73,12 @@ class Users extends Phalcon\Mvc\Model {
 
 			$status = $connection->insert('ester_users',
 				array($this->login,$this->firstName,$this->secondName,$this->role,$this->city,
-					$this->dogovor,$this->email,md5(sha1($this->pass)+md5($this->login)),$this->active
+					$this->dogovor,$this->email,md5(sha1($this->pass)+md5($this->login)),$this->active,
+					$this->tariff_rate,
 				),
 				array("username","firstname","secondname","role","city",
-					"dogovor","email","token","active"
+					"dogovor","email","token","active",
+					"tariff_rate",
 				)
 			);
 
@@ -114,20 +127,24 @@ class Users extends Phalcon\Mvc\Model {
                                   ester_users.firstname,
                                   ester_users.secondname,
                                   ester_users.role,
+                                  ester_users.role as role_id,
                                   ester_users.city,
                                   ester_users.dogovor,
                                   ester_users.email,
-                                  ester_users.active FROM ester_users WHERE  ester_users.id = :id LIMIT 1', Phalcon\Db::FETCH_ASSOC, array('id' => $id));
+								  ester_users.active,
+								  ester_users.tariff_rate FROM ester_users WHERE  ester_users.id = :id LIMIT 1', Phalcon\Db::FETCH_ASSOC, array('id' => $id));
 
-        $this->id = $arrUser['id'];
-        $this->login = $arrUser['username'];
-        $this->firstName = $arrUser['firstname'];
-        $this->secondName = $arrUser['secondname'];
-        $this->role = $arrUser['role'];
-        $this->city = $arrUser['city'];
-        $this->dogovor = $arrUser['dogovor'];
-        $this->email = $arrUser['email'];
-		$this->active = $arrUser['active'];
+        $this->id          = $arrUser['id'];
+        $this->login       = $arrUser['username'];
+        $this->firstName   = $arrUser['firstname'];
+        $this->secondName  = $arrUser['secondname'];
+        $this->role        = $arrUser['role'];
+        $this->role_id     = $arrUser['role_id'];
+        $this->city        = $arrUser['city'];
+        $this->dogovor     = $arrUser['dogovor'];
+        $this->email       = $arrUser['email'];
+		$this->active      = $arrUser['active'];
+		$this->tariff_rate = $arrUser['tariff_rate'];
     }
 
 	public function updateUser($id)
@@ -138,7 +155,7 @@ class Users extends Phalcon\Mvc\Model {
 			$connection->begin();
 
         	$status = $connection->update('ester_users',
-							array("firstname","secondname","role","city","dogovor","email","active"),
+							array("firstname","secondname","role","city","dogovor","email","active","tariff_rate"),
 							array(
 								$this->firstName,
 								$this->secondName,
@@ -146,7 +163,8 @@ class Users extends Phalcon\Mvc\Model {
 								$this->city,
 								$this->dogovor,
 								$this->email,
-								$this->active
+								$this->active,
+								$this->tariff_rate
 							),
 							'id = "' . $id . '"');
 

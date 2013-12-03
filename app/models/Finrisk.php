@@ -23,47 +23,49 @@ class Finrisk extends Phalcon\Mvc\Model{
     public $dogovor;
     public $time;
 
+	public static function getTariffRates()
+	{
+		return array(
+			'2' => '2%',
+			'2.5' => '2.5%',
+		);
+	}
 
     public function saveDogovorFinRisk(){
 
-        $dog = $this->getDI()->get('db')->fetchOne("select dogovor from ester_dogovors_finrisk limit 1", Phalcon\Db::FETCH_ASSOC);
+        $dog = $this->getDI()->get('db')->fetchOne("select dogovor from ester_dogovors_finrisk order by cast(substring_index(dogovor, '№', -1) AS INT) limit 1", Phalcon\Db::FETCH_ASSOC);
         $this->dogovor = $dog["dogovor"];
-        $newdogovor = $this->getDI()->get("db")->fetchOne("select saveDogovor(
-        :familia,
-        :imya,
-        :otchestvo,
-        :dateb,
-        :tel,
-        :seria_pass,
-        :nomer_pass,
-        :vidan_pass,
-        :propiska,
-        :tarif,
-        :summa,
-        :summa_pro,
-        :premiya,
-        :premiya_pro,
-        :insur_from,
-        :insur_to,
-        :userid,
-        :dogovor,
-        :dog_time
-        ) as newDog", Phalcon\Db::FETCH_ASSOC, array("familia"=>$this->familia,"imya"=>$this->imya,
-            "otchestvo"=>$this->otchestvo,"dateb"=>$this->dateB,
-            "tel"=>$this->tel,"seria_pass"=>$this->seria_pass,
-            "nomer_pass"=>$this->nomer_pass,"vidan_pass"=>$this->vidan_pass,
-            "propiska"=>$this->propiska,
-            "tarif"=>$this->tarif,"summa"=>$this->summa,
-            "summa_pro"=>$this->summa_pro,"premiya"=>$this->premiya,
-            "premiya_pro"=>$this->premiya_pro,"insur_from"=>$this->insur_from,
-            "insur_to"=>$this->insur_to,"userid"=>$this->user,
-            "dogovor"=>$this->dogovor ,"dog_time"=>$this->time));
+		$dogtime2 = DateTime::createFromFormat('d/m/Y', $this->time);
 
-        $this->id =$newdogovor['newDog'];
+		$connection = $this->getDI()->get('db');
+		$connection->begin();
+		$status = $connection->insert('ester_finriski',
+			array($this->familia, $this->imya, $this->otchestvo, $this->dateB, $this->tel,
+				$this->seria_pass, $this->nomer_pass, $this->vidan_pass, $this->propiska,
+				$this->tarif, $this->summa, $this->summa_pro, $this->premiya, $this->premiya_pro,
+				$this->insur_from, $this->insur_to, $this->user, $this->dogovor , $this->time,
+				$dogtime2->format('Y-m-d'),
+			),
+			array(
+				'familia', 'imya', 'otchestvo', 'dateb', 'tel',
+				'seria_pass', 'nomer_pass', 'vidan_pass', 'propiska',
+				'tarif', 'summa', 'summa_pro', 'premiya', 'premiya_pro',
+				'insur_from', 'insur_to', 'userid', 'dogovor', 'dog_time',
+				'dog_time2',
+			)
+		);
 
-        return $this->id;
+		if ($status)
+		{
+			$this->id = $connection->lastInsertId();
+			$connection->commit();
+		}
+		else
+		{
+			$connection->rollback();
+		}
 
-
+		return $this->id;
     }
 
 	public function getAllDogovors($filter = array())
@@ -136,7 +138,14 @@ class Finrisk extends Phalcon\Mvc\Model{
 			$user->getUserById($this->getDI()->get('session')->get("userid"));
 
 			$userIds = Users::extractUserIds($user->getSubordinateUsers());
-			$sql = strtr($sql, array('{{CONDITION}}'=>' id = :id AND userid IN (' . implode(',', $userIds) . ')'));
+			if (empty($userIds))
+			{
+				$sql = strtr($sql, array('{{CONDITION}}'=>' id = :id'));
+			}
+			else
+			{
+				$sql = strtr($sql, array('{{CONDITION}}'=>' id = :id AND userid IN (' . implode(',', $userIds) . ')'));
+			}
 		}
 
 		$dog = $this->getDI()->get('db')->fetchOne($sql, Phalcon\Db::FETCH_ASSOC, array('id' => $this->id));

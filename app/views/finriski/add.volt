@@ -76,10 +76,19 @@
                 <div class="span6">
                     <div class="row-fluid text-center">
                         <label for="tariff">Тариф:</label>
-                        <select name="tariff" class="span11">
-                            <option {% if dogovor.tarif == 2 %} selected {% endif %}value="2">2%</option>
-                            <option {% if dogovor.tarif == 2.5 %} selected {% endif %} value="2.5">2.5%</option>
-                        </select>
+						<select name="tariff" class="span11" {% if currentUser.tariff_rate != NULL %} disabled="" {% endif %}>
+							{% if currentUser.tariff_rate == NULL %}
+								{% for tariff,label in dogovor.getTariffRates() %}
+									<option {% if dogovor.tariff_rate == tariff %} selected {% endif %} value="{{ tariff }}">{{ label }}</option>
+								{% endfor %}
+							{% else %}
+								{% for tariff,label in dogovor.getTariffRates() %}
+									{% if tariff == currentUser.tariff_rate %}
+										<option selected value="{{ currentUser.tariff_rate }}">{{ label }}</option>
+									{% endif %}
+								{% endfor %}
+							{% endif %}
+						</select>
                     </div>
                     <div class="row-fluid text-center">
                         <label for="summa">Страховая сумма:</label>

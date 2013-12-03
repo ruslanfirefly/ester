@@ -137,6 +137,14 @@ function FloatToSamplesInWordsRus(fAmount)
 function roleChanging(self)
 {
 	var role = $(self).find("option:selected").val();
+	if (role == 6) // If role is Agent
+	{
+		$('.user-add select[name=tariff], .user-edit select[name=tariff]').prop('disabled', false);
+	}
+	else
+	{
+		$('.user-add select[name=tariff], .user-edit select[name=tariff]').prop('disabled', true).find('option[value=]').prop('selected', true);
+	}
 	$('#subordinated_to').prop('disabled', true);
 	$.ajax({
 		'url': '/accounts/ajaxPrivilegedUsers/' + role,

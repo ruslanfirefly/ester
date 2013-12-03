@@ -75,6 +75,7 @@
 			</form>
 		</div>
 		<div class="paginator">
+			{% if page.total_pages > 1 %}
 			<a class="page page-first{% if page.current <= 1 %} page-current {% endif %}" onclick="return apply_page('#filter', 1);" href="#">&#8606;</a>
 			<a class="page page-before{% if page.current <= 1 %} page-current {% endif %}" onclick="return apply_page('#filter', {{ page.before }});" href="#">&#8592;</a>
 			{% for pg in 1..page.last %}
@@ -86,6 +87,7 @@
 			{% endfor %}
 			<a class="page page-next{% if page.current == page.last %} page-current {% endif %}" onclick="return apply_page('#filter', {{ page.next }});" href="#">&#8594;</a>
 			<a class="page page-last{% if page.current == page.last %} page-current {% endif %}" onclick="return apply_page('#filter', {{ page.last }});" href="#">&#8608;</a>
+			{% endif %}
 		</div>
 
         <table class="table table-hover table-condensed" style="background-color: #fcfcfc">
@@ -113,6 +115,7 @@
         </table>
 
 		<div class="paginator">
+			{% if page.total_pages > 1 %}
 			<a class="page page-first{% if page.current <= 1 %} page-current {% endif %}" onclick="return apply_page('#filter', 1);" href="#">&#8606;</a>
 			<a class="page page-before{% if page.current <= 1 %} page-current {% endif %}" onclick="return apply_page('#filter', {{ page.before }});" href="#">&#8592;</a>
 			{% for pg in 1..page.last %}
@@ -124,6 +127,7 @@
 			{% endfor %}
 			<a class="page page-next{% if page.current == page.last %} page-current {% endif %}" onclick="return apply_page('#filter', {{ page.next }});" href="#">&#8594;</a>
 			<a class="page page-last{% if page.current == page.last %} page-current {% endif %}" onclick="return apply_page('#filter', {{ page.last }});" href="#">&#8608;</a>
+			{% endif %}
 		</div>
 
     </div>
