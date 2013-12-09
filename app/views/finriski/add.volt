@@ -98,6 +98,16 @@
                         <label for="summa_pro">Страховая сумма(прописью):</label>
                         <input type="text" name="summa_pro" class="span11" placeholder="Страховая сумма(прописью)" value="{{ dogovor.summa_pro }}" required>
                     </div>
+					<div class="offset0 span11 row-fluid">
+						<div class="row-fluid text-center">
+							<label for="summa">Кооператив:</label>
+							<input type="text" name="cooperative" class="span12" placeholder="КПК" value="{{ dogovor.cooperative }}" required>
+						</div>
+						<div class="row-fluid text-center">
+							<label for="summa">Исполнитель КПК:</label>
+							<input type="text" name="performer" class="span12" placeholder="Исполнитель кредитных потребительских кредитов" value="{{ dogovor.performer }}" required>
+						</div>
+					</div>
 
                 </div>
                 <div class="span6">
@@ -120,6 +130,10 @@
                         <label for="premiya_pro">Страховая премия (прописью):</label>
                         <input type="text" name="premiya_pro" class="span11" placeholder="Страховая премия(прописью)" value="{{ dogovor.premiya_pro }}" required>
                     </div>
+						<div class="span11 row-fluid text-center">
+							<label for="summa">Вид вклада:</label>
+							<input type="text" name="deposit_type" class="span12" placeholder="срочный, до востребования и т.д." value="{{ dogovor.deposit_type }}" required>
+						</div>
                 </div>
             </div>
             <div class="row-fluid">

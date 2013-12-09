@@ -113,7 +113,6 @@ class Users extends Phalcon\Mvc\Model {
 		{
 			$connection->rollback();
 			$msg = $e->getMessage();
-			var_dump($msg);
 			return false;
 		}
 
@@ -145,6 +144,8 @@ class Users extends Phalcon\Mvc\Model {
         $this->email       = $arrUser['email'];
 		$this->active      = $arrUser['active'];
 		$this->tariff_rate = $arrUser['tariff_rate'];
+
+		$this->subordinatedTo = $this->getSubordinatedTo();
     }
 
 	public function updateUser($id)
@@ -170,10 +171,13 @@ class Users extends Phalcon\Mvc\Model {
 
 			if ($status && is_array($this->subordinatedTo)) {
 				$connection->delete('ester_subordinate_users', 'subordinate_user_id = "' . $id . '"');
-				foreach($this->subordinatedTo as $usr)
+				if (!empty($this->subordinatedTo))
 				{
-					$status = $connection->insert('ester_subordinate_users', array($usr, $id), array('user_id', 'subordinate_user_id'));
-					if (!$status) break;
+					foreach($this->subordinatedTo as $usr)
+					{
+						$status = $connection->insert('ester_subordinate_users', array($usr, $id), array('user_id', 'subordinate_user_id'));
+						if (!$status) break;
+					}
 				}
 
 				if ($status)

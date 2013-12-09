@@ -80,6 +80,9 @@ CREATE TABLE `ester_finriski` (
   `dogovor` varchar(255) NOT NULL,
   `dog_time` varchar(25) NOT NULL,
   `dog_time2` date DEFAULT NULL,
+  `cooperative` VARCHAR(255) NOT NULL DEFAULT '',
+  `performer` VARCHAR(255) NOT NULL DEFAULT '',
+  `deposit_type` VARCHAR(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
   KEY `userid` (`userid`)

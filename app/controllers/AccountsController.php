@@ -175,7 +175,11 @@ class AccountsController extends Phalcon\Mvc\Controller{
 			}
 
 			$user->subordinatedTo = $this->request->getPost('subordinated_to');
-			$user->subordinatedTo = array_values( is_array($user->subordinatedTo) ? $user->subordinatedTo : array($user->subordinatedTo) );
+			if ($user->subordinatedTo != NULL) {
+				$user->subordinatedTo = array_values( is_array($user->subordinatedTo) ? $user->subordinatedTo : array($user->subordinatedTo) );
+			} else {
+				$user->subordinatedTo = array();
+			}
 
 			if (!preg_match('/^[0-9]*$/', implode('', $user->subordinatedTo)))
 			{

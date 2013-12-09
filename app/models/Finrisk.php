@@ -22,6 +22,9 @@ class Finrisk extends Phalcon\Mvc\Model{
     public $user;
     public $dogovor;
     public $time;
+	public $cooperative;
+	public $performer;
+	public $deposit_type;
 
 	public static function getTariffRates()
 	{
@@ -44,14 +47,14 @@ class Finrisk extends Phalcon\Mvc\Model{
 				$this->seria_pass, $this->nomer_pass, $this->vidan_pass, $this->propiska,
 				$this->tarif, $this->summa, $this->summa_pro, $this->premiya, $this->premiya_pro,
 				$this->insur_from, $this->insur_to, $this->user, $this->dogovor , $this->time,
-				$dogtime2->format('Y-m-d'),
+				$dogtime2->format('Y-m-d'), $this->cooperative, $this->performer, $this->deposit_type,
 			),
 			array(
 				'familia', 'imya', 'otchestvo', 'dateb', 'tel',
 				'seria_pass', 'nomer_pass', 'vidan_pass', 'propiska',
 				'tarif', 'summa', 'summa_pro', 'premiya', 'premiya_pro',
 				'insur_from', 'insur_to', 'userid', 'dogovor', 'dog_time',
-				'dog_time2',
+				'dog_time2', 'cooperative', 'performer', 'deposit_type',
 			)
 		);
 
@@ -170,6 +173,9 @@ class Finrisk extends Phalcon\Mvc\Model{
             $this->time = $dog["dog_time"];
             $this->user =$dog["userid"];
             $this->dogovor = $dog["dogovor"];
+			$this->cooperative = $dog["cooperative"];
+			$this->performer   = $dog['performer'];
+			$this->deposit_type = $dog['deposit_type'];
             return true;
         }else{
             return false;
@@ -180,9 +186,9 @@ class Finrisk extends Phalcon\Mvc\Model{
 
        return $this->getDI()->get("db")->update("ester_finriski",
             array("familia","imya","otchestvo","dateb","tel","seria_pass","nomer_pass","vidan_pass","propiska",
-                "tarif","summa","summa_pro","premiya","premiya_pro","insur_from","insur_to"),
+                "tarif","summa","summa_pro","premiya","premiya_pro","insur_from","insur_to","cooperative","performer",'deposit_type'),
             array($this->familia,$this->imya,$this->otchestvo,$this->dateB,$this->tel,$this->seria_pass,$this->nomer_pass,$this->vidan_pass,$this->propiska,
-                $this->tarif,$this->summa,$this->summa_pro,$this->premiya,$this->premiya_pro,$this->insur_from,$this->insur_to),
+                $this->tarif,$this->summa,$this->summa_pro,$this->premiya,$this->premiya_pro,$this->insur_from,$this->insur_to,$this->cooperative,$this->performer,$this->deposit_type),
            "id = ".$this->id
         );
 

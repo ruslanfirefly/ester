@@ -107,7 +107,8 @@
                     <td>{{ dog["imya"]|escape }}</td>
                     <td>{{ dog["otchestvo"]|escape }}</td>
                     <td>
-                        <a href="/finriski/print/{{ dog["id"] }}/"><button type="button" class="btn btn-primary">Печатать</button></a>
+                        <a href="/finriski/print/{{ dog["id"] }}/?type=polis"><button type="button" class="btn btn-primary">Печатать</button></a>
+                        <a href="/finriski/print/{{ dog["id"] }}/?type=polis_dogovor"><button type="button" class="btn btn-primary">Печатать c договором</button></a>
                         <a href="/finriski/edit/{{ dog["id"] }}/"><button type="button" class="btn btn-warning">Редактировать</button></a>
                     </td>
                 </tr>

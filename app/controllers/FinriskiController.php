@@ -84,7 +84,6 @@ class FinriskiController extends Phalcon\Mvc\Controller {
             $dogovor->nomer_pass = $this->request->getPost("nomer");
             $dogovor->vidan_pass = $this->request->getPost("pass_vidan");
             $dogovor->propiska = $this->request->getPost("adress");
-			var_dump($user);
 			if ($user->tariff_rate == NULL)
 			{
 	            $dogovor->tarif = $this->request->getPost("tariff");
@@ -100,6 +99,9 @@ class FinriskiController extends Phalcon\Mvc\Controller {
             $dogovor->premiya = $this->request->getPost("premiya");
             $dogovor->premiya_pro = $this->request->getPost("premiya_pro");
             $dogovor->time = date('d/m/Y', time());
+			$dogovor->cooperative  = $this->request->getPost('cooperative');
+			$dogovor->performer    = $this->request->getPost('performer');
+			$dogovor->deposit_type = $this->request->getPost('deposit_type');
             if(!count($message) && $range){
                 if($dogovor->saveDogovorFinRisk()){
                     $this->response->redirect("finriski/");
@@ -118,40 +120,135 @@ class FinriskiController extends Phalcon\Mvc\Controller {
 
 	public function printAction($id=false)
 	{
+		$type = isset($_GET['type']) ? $_GET['type'] : 'polis';
 		if (!$id || !preg_match('/^\d{1,}$/',$id))
 		{
             $this->response->redirect('finriski/');
         }
+		$user = new Users();
+		$user->getUserById($this->session->get('userid'));
+
+		$agentBasis  = 'договора №';
+		$checkLength = strlen($agentBasis);
+		$agentBasis .= $user->dogovor;
+		if (!isset($user->dogovor) || empty($user->dogovor))
+		{
+			$ordinatedUser = new Users();
+			foreach($user->subordinatedTo as $user_id)
+			{
+				$ordinatedUser->getUserById($user_id);
+				if (isset($user->dogovor) && (!empty($user->dogovor)))
+				{
+					$agentBasis = 'договора №' . $ordinatedUser->dogovor;
+					break;
+				}
+			}
+		}
+
+		if (strlen($agentBasis) <= $checkLength)
+		{
+			$this->response->redirect('finriski/');
+		}
+
+
         $dog = new Finrisk();
         $dog->id = $id;
         $dog->getDogById();
-                $temp1 =explode('/',$dog->insur_from);
-                $temp2 =explode('/',$dog->insur_to);
-                $temp3 =explode('/',$dog->time);
+                $period_start = array_combine(array('d', 'm', 'Y'), explode('/',$dog->insur_from));
+                //$period_end  = array_combine(array('d', 'm', 'Y'), explode('/',$dog->insur_to));
+				$period_end   = array_combine(array('d', 'm', 'Y'), explode('.', date('d.m.Y', 
+					strtotime('+1 YEAR -1 DAY', mktime(0, 0, 0, $period_start['m'], $period_start['d'], $period_start['Y']))
+				)));
+                $dogtime      = array_combine(array('d', 'm', 'Y'), explode('/',$dog->time));
+
+				$current_date   = array_combine(array('Y', 'm', 'd'), explode('.', date("Y.m.d")));
+				$single_payment = array_combine(array('Y', 'm', 'd'), explode('.', date("Y.m.d", strtotime("NOW +5 DAY"))));
+
+				$summa   = floatval($dog->summa);
+				$summa   = number_format($summa, 2, ',', ' ')   . ' (' . preg_replace('/ (рубл[^ ]+)/ui', ') $1', $dog->summa_pro);
+				$premiya = floatval($dog->premiya);
+				$premiya = number_format($premiya, 2, ',', ' ') . ' (' . preg_replace('/ (рубл[^ ]+)/ui', ') $1', $dog->premiya_pro);
+				$months  = ''; // date period as 12 (Двенадцать) месяцев . ', ';
+
                 try{
-                $document = new DocumentOpenXML('../app/lib/polisFR.docx');
+                //$document = new DocumentOpenXML('../app/lib/polisFR.docx');
+				switch($type)
+				{
+					case 'polis_dogovor':
+	                	$filename = '../app/lib/polisFR_and_other.docx';
+						break;
+					case 'polis':
+					default:
+	                	$filename = '../app/lib/polisFR.docx';
+				}
+				$document = new DocumentOpenXML($filename);
+						
                 $documentData = array(
                     't1'   => $dog->dogovor,
-                    't2'   => $temp3[0].' '.LibFunc::month($temp3[1]).' '.$temp3[2].'г.',
+                    't2'   => $dogtime['d'].' '.LibFunc::month($dogtime['m']).' '.$dogtime['Y'].'г.',
                     't3'   => $dog->familia,
                     't4'   => $dog->imya,
                     't5'   => $dog->otchestvo,
                     't6'   => $dog->propiska,
-                    't7'   => $temp1[0],
-                    't8'   => LibFunc::month($temp1[1]),
-                    't9'   => $temp1[2],
-                    't010' => $temp2[0],
-                    't011' => LibFunc::month($temp2[1]),
-                    't012' => $temp2[2],
-                    't013' => $dog->summa,
-                    't014' => $dog->summa_pro,
-                    't015' => $dog->premiya,
-                    't016' => $dog->premiya_pro,
+					'cooperative' => $dog->cooperative, //'_cooperative_',
+					'performer'   => $dof->performer, //'_performer_',
+					//'months' => $months,
+                    //'t7'   => $period_start['d'],
+                    //'t8'   => LibFunc::month($period_start['m']),
+                    //'t9'   => $period_start['Y'],
+                    //'t10' => $period_end['d'],
+                    //'t11' => LibFunc::month($period_end['m']),
+                    //'t12' => $period_end['Y'],
+                    'payment' => $summa, //number_format($dog->summa, ',', ' ', 2),
+					'franshiza' => '_franshiza_',
+                    //'t014' => $dog->summa_pro,
+                    'payment_premium' => $premiya, //number_format($dog->premiya, ',', ' ', 2),
+                    //'t016' => $dog->premiya_pro,
                     't017' => $dog->seria_pass,
                     't018' => $dog->nomer_pass,
                     't019' => $dog->vidan_pass,
                     't020' => $dog->dateB,
                     't021' => $dog->tel,
+
+					't1_no' => trim(preg_replace('/^.*№/ui', '', $dog->dogovor)),
+
+					'agentname' => $user->firstName . ' ' . $user->secondName, // . ' ' $user->{third name?},
+					'agentbasis' => $agentBasis, // Договор, если нет - фин.брокерский договор, тольео его и не выше
+
+					//'client'    => '_client_',
+					'clientname' => $dog->familia . ' ' . $dog->imya . ' ' . $dog->otchestvo,
+					'clientbasis' => 'Паспорта серия ' . $doc->seria_pass . ' номер ' . $doc->nomer_pass, // Паспорт Но
+
+					'dog_date'  => $dogtime['d'] . '.' . $dogtime['m'] . '.' . substr($dogtime['Y'], -2),
+					  'dog_day'   => $dogtime['d'],
+					  'dog_month' => LibFunc::month($dogtime['m']),
+					  'dog_year'  => $dogtime['Y'],
+
+					'deposit_type' => $doc->deposit_type,
+
+					'period_start_day'   => $period_start['d'],
+					'period_start_month' => LibFunc::month($period_start['m']),
+					'period_start_year'  => $period_start['Y'],
+                    //'t7'   => $period_start[0],
+                    //'t8'   => LibFunc::month($period_start[1]),
+                    //'t9'   => $period_start[2],
+
+					'period_end_day'   => $period_end['d'],
+					'period_end_month' => LibFunc::month($period_end['m']),
+					'period_end_year'  => $period_end['Y'],
+                    //'t10' => $period_end[0],
+                    //'t11' => LibFunc::month($period_end[1]),
+                    //'t12' => $period_end[2],
+
+					// Сдвиг платежа на пять дней, 
+					'sinpay_day'     => $single_payment['d'], //'_spd_',
+					'sinpay_month'   => LibFunc::month($single_payment['m']), //'_spm_',
+					'sinpay_year'    => $single_payment['Y'], //'_spy_',
+					'single_payment' => '_single_payment_',
+
+					'current_date'  => $current_date['d'] . '.' . $current_date['m'] . '.' . substr($current_date['Y'], -2),
+					'profit_summ'   => '_profit_summ_',
+
                 );
                $document->set($documentData);
                $this->response->setHeader('Content-type','application/msword');
@@ -191,6 +288,9 @@ class FinriskiController extends Phalcon\Mvc\Controller {
             $validator->add("end_insur",new PresenceOf(array( "message" => "Заполните поле конец периода страхования!" )));
             $validator->add("premiya",new PresenceOf(array( "message" => "Заполните поле страховая премия!" )));
             $validator->add("premiya_pro",new PresenceOf(array( "message" => "Заполните поле страховая премия прописью!" )));
+            $validator->add("cooperative",new PresenceOf(array( "message" => "Заполните поле Кооператив!" )));
+            $validator->add("performer",new PresenceOf(array( "message" => "Заполните поле Исполнитель КПК!" )));
+            $validator->add("deposit_type",new PresenceOf(array( "message" => "Заполните поле Вид вклада!" )));
             $message = $validator->validate($_POST);
 
             if($this->request->getPost('start_insur') && $this->request->getPost('end_insur') ){
@@ -223,6 +323,10 @@ class FinriskiController extends Phalcon\Mvc\Controller {
             $dogovor->insur_to = $this->request->getPost("end_insur");
             $dogovor->premiya = $this->request->getPost("premiya");
             $dogovor->premiya_pro = $this->request->getPost("premiya_pro");
+
+			$dogovor->cooperative  = $this->request->getPost('cooperative');
+			$dogovor->performer    = $this->request->getPost('performer');
+			$dogovor->deposit_type = $this->request->getPost('deposit_type');
 
             if(!count($message) && $range){
                 if($dogovor->updateDogovorFinRisk()){
