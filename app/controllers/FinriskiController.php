@@ -171,7 +171,6 @@ class FinriskiController extends Phalcon\Mvc\Controller {
 				$months  = ''; // date period as 12 (Двенадцать) месяцев . ', ';
 
                 try{
-                //$document = new DocumentOpenXML('../app/lib/polisFR.docx');
 				switch($type)
 				{
 					case 'polis_dogovor':
@@ -200,7 +199,7 @@ class FinriskiController extends Phalcon\Mvc\Controller {
                     //'t11' => LibFunc::month($period_end['m']),
                     //'t12' => $period_end['Y'],
                     'payment' => $summa, //number_format($dog->summa, ',', ' ', 2),
-					'franshiza' => '_franshiza_',
+					'franshiza' => '0 (Ноль) рублей 00 копеек',//'_franshiza_',
                     //'t014' => $dog->summa_pro,
                     'payment_premium' => $premiya, //number_format($dog->premiya, ',', ' ', 2),
                     //'t016' => $dog->premiya_pro,
@@ -229,25 +228,19 @@ class FinriskiController extends Phalcon\Mvc\Controller {
 					'period_start_day'   => $period_start['d'],
 					'period_start_month' => LibFunc::month($period_start['m']),
 					'period_start_year'  => $period_start['Y'],
-                    //'t7'   => $period_start[0],
-                    //'t8'   => LibFunc::month($period_start[1]),
-                    //'t9'   => $period_start[2],
 
 					'period_end_day'   => $period_end['d'],
 					'period_end_month' => LibFunc::month($period_end['m']),
 					'period_end_year'  => $period_end['Y'],
-                    //'t10' => $period_end[0],
-                    //'t11' => LibFunc::month($period_end[1]),
-                    //'t12' => $period_end[2],
 
 					// Сдвиг платежа на пять дней, 
-					'sinpay_day'     => $single_payment['d'], //'_spd_',
-					'sinpay_month'   => LibFunc::month($single_payment['m']), //'_spm_',
-					'sinpay_year'    => $single_payment['Y'], //'_spy_',
-					'single_payment' => '_single_payment_',
+					'sinpay_day'     => $single_payment['d'],
+					'sinpay_month'   => LibFunc::month($single_payment['m']),
+					'sinpay_year'    => $single_payment['Y'],
+					'single_payment' => $premiya, //'_single_payment_', // dog->payment_premium
 
 					'current_date'  => $current_date['d'] . '.' . $current_date['m'] . '.' . substr($current_date['Y'], -2),
-					'profit_summ'   => '_profit_summ_',
+					'profit_summ'   => $summa, //'_profit_summ_', // equal to dog->summa
 
                 );
                $document->set($documentData);
