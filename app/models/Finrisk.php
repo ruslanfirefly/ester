@@ -83,17 +83,29 @@ class Finrisk extends Phalcon\Mvc\Model{
 				FROM ester_finriski as ef
 			{{WHERE}}
 			ORDER BY id DESC';
+		$sql = preg_replace("/[ \t\n]+/", ' ', $sql);
+
+		if (is_array($filter['date']['from']))
+		{
+			$date = $filter['date']['from'];
+			$filter['date']['from'] = $date['Y'] . '-' . $date['m'] . '-' . $date['d'];
+		}
+		if (is_array($filter['date']['until']))
+		{
+			$date = $filter['date']['until'];
+			$filter['date']['until'] = $date['Y'] . '-' . $date['m'] . '-' . $date['d'];
+		}
 
 		$condition = array();
 		if (!empty($filter))
 		{
 			if (isset($filter['date']['from']) && (!empty($filter['date']['from'])))
 			{
-				$condition[] = 'ef.dog_time2 >= \'' . mysql_escape_string($filter['date']['from']) . ' 00:00:00\'';
+				$condition[] = 'ef.dog_time2 >= \'' . mysql_escape_string($filter['date']['from']) . '\'';
 			}
 			if (isset($filter['date']['until']) && (!empty($filter['date']['until'])))
 			{
-				$condition[] = 'ef.dog_time2 <= \'' . mysql_escape_string($filter['date']['until']) . ' 00:00:00\'';
+				$condition[] = 'ef.dog_time2 <= \'' . mysql_escape_string($filter['date']['until']) . '\'';
 			}
 
 			if (isset($filter['orderno']['from']) && (!empty($filter['orderno']['from'])))
@@ -124,6 +136,8 @@ class Finrisk extends Phalcon\Mvc\Model{
 
 			$sql = strtr($sql, array('{{WHERE}}' => $condition));
 		}
+		//var_dump($sql);
+		//die(__METHOD__);
 
 		return $this->getDI()->get('db')->fetchAll($sql, Phalcon\Db::FETCH_ASSOC);
     }

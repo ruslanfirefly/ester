@@ -1,6 +1,11 @@
 {% extends "index/index.volt" %}
 {% block mainMenu %}{% include "mainMenu/index.volt" %}{% endblock %}
 {% block title %}Финансовые риски{% endblock %}
+{% block jscss %}
+    {{ super() }}
+    <link href="/css/datepicker.css" type="text/css" rel="stylesheet">
+    <script src="/js/datepicker.js" type="text/javascript"></script>
+{% endblock %}
 {% block content %}
 
 	<style>
@@ -53,11 +58,11 @@
 				<div class="span12 row-fluid text-center">
 					<h6>Дата</h6>
 				</div>
-				<div class="span12 row-fluid">
-					<div class="span3">c: </div><input name="filter[date][from]" value="{{ filter['date']['from']|escape }}" class="span9" datepicker/>
+				<div class="date span12 input-prepend" id="filter_date_from" data-date-format="dd/mm/yyyy">
+					<span class="add-on">&nbsp;C</span><input type="text" class="span10" maxlength="16" readonly name="filter[date][from]" value="{{ filter['date']['from']|escape }}" style="cursor: pointer;" >
 				</div>
-				<div class="span12 row-fluid">
-					<div class="span3">по: </div><input name="filter[date][until]" value="{{ filter['date']['until']|escape }}" class="span9" datepicker/>
+				<div class="date span12 input-prepend" id="filter_date_until" data-date-format="dd/mm/yyyy">
+					<span class="add-on">По</span><input type="text" class="span10" maxlength="16" readonly name="filter[date][until]" value="{{ filter['date']['until']|escape }}" style="cursor: pointer;" >
 				</div>
 			</div>
 			<div class="delimiter span1"></div>
@@ -65,11 +70,11 @@
 				<div class="span12 row-fluid text-center">
 					<h6>Диапазон договоров</h6>
 				</div>
-				<div class="span12 row-fluid">
-					<div class="span3">c: </div><input name="filter[orderno][from]" value="{{ filter['orderno']['from']|escape }}" class="span9"/>
+				<div class="span12 input-prepend" id="filter_orderno_from">
+					<span class="add-on">&nbsp;C</span><input type="text" class="span10" maxlength="16" name="filter[orderno][from]" value="{{ filter['orderno']['from']|escape }}" style="cursor: pointer;" >
 				</div>
-				<div class="span12 row-fluid">
-					<div class="span3">по: </div><input name="filter[orderno][until]" value="{{ filter['orderno']['until']|escape }}" class="span9"/>
+				<div class="span12 input-prepend" id="filter_orderno_until">
+					<span class="add-on">По</span><input type="text" class="span10" maxlength="16" name="filter[orderno][until]" value="{{ filter['orderno']['until']|escape }}" style="cursor: pointer;" >
 				</div>
 			</div>
 			</form>

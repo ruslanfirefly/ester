@@ -225,6 +225,7 @@ $(document).ready(function(){
     });
     $("#formAddDogDms input[name=start_insur],#formAddDogDms input[name=end_insur]").datepicker({format:"dd/mm/yyyy", weekStart:1, viewMode:1});
     $("#formAddDogDms input[name^=dateRozh],#formAddDogDms input[name^=pass_date]").datepicker({format:"dd/mm/yyyy", weekStart:1, viewMode:2});
+    $("#filter .date input").datepicker({format:"dd/mm/yyyy", weekStart:1, viewMode:2});
  // добавление договора финрисков
 
     $("#formAddDogFinR input[name=dateb]").datepicker({format:"dd/mm/yyyy", weekStart:1, viewMode:2});

@@ -29,7 +29,20 @@ class FinriskiController extends Phalcon\Mvc\Controller {
 		$dogovors = new Finrisk();
 		$filter      = (isset($_GET['filter']) ? $_GET['filter'] : array());
 		$currentPage = (isset($_GET['filter']['page']) ? ((int) $_GET['filter']['page']) : 1);
+
+		// Convert to array with keys Y,m,d for request
+		if (!empty($filter['date']['from']))
+		{
+			$filter['date']['from']  = array_combine(array('d', 'm', 'Y'), explode('/', $filter['date']['from']));
+		}
+		if (!empty($filter['date']['until']))
+		{
+			$filter['date']['until'] = array_combine(array('d', 'm', 'Y'), explode('/', $filter['date']['until']));
+		}
 		$allDogovors = $dogovors->getAllDogovors($filter);
+
+		if (is_array($filter['date']['from']))  $filter['date']['from']  = implode('/', $filter['date']['from']);
+		if (is_array($filter['date']['until'])) $filter['date']['until'] = implode('/', $filter['date']['until']);
 		$paginator = new \Phalcon\Paginator\Adapter\NativeArray(
 			array(
 				"data" => $allDogovors,
