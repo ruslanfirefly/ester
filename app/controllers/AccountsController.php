@@ -6,7 +6,8 @@ class AccountsController extends Phalcon\Mvc\Controller{
         if(!$this->session->has("login")){
            $this->response->redirect('login/');
         }
-		if(!in_array((int)$this->session->get("role"), array(Roles::ROLE_SUPERADMIN, Roles::ROLE_ADMIN, Roles::ROLE_MANAGER)))
+		$subRoles = Roles::getRoleSubroles($this->session->get("role"));
+		if(empty($subRoles))
 		{
             $this->response->redirect('');
         }

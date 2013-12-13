@@ -8,7 +8,8 @@ class IndexController extends Phalcon\Mvc\Controller{
         }
         $this->view->setVar("topLogin", $this->session->get("login"));
         $this->view->setVar("mainTitle", 'Главная');
-        if($this->session->get("role")>3){
+		$subRoles = Roles::getRoleSubroles($this->session->get("role"));
+        if(empty($subRoles)){
             $this->view->setVar("menuforactionright", '');
         }else{
             $this->view->setVar("menuforactionright", '<li><a href="/accounts/">Пользователи</a> </li>');

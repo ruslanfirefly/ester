@@ -16,7 +16,8 @@ class FinriskiController extends Phalcon\Mvc\Controller {
 		$this->view->setVar("mainTitle", 'Финансовые риски');
 
 
-        if(!in_array($this->session->get("role"), array(Roles::ROLE_SUPERADMIN, Roles::ROLE_ADMIN))) {
+		$subRoles = Roles::getRoleSubroles($this->session->get("role"));
+        if(empty($subRoles)){
             $this->view->setVar("menuforactionright", '');
         }else{
             $this->view->setVar("menuforactionright", '<li><a href="/accounts/">Пользователи</a> </li>');
