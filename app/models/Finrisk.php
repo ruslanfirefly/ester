@@ -127,12 +127,26 @@ class Finrisk extends Phalcon\Mvc\Model{
 		{
 			$user = new Users();
 			$user->getUserById($this->getDI()->get('session')->get('userid'));
+			if ($user->id != NULL)
+			{
+				var_dump($this->getDI()->get('session')->get('userid'), $user);
 
-			$userIds = Users::extractUserIds($user->getSubordinateUsers());
-			$userIds[] = $user->id;
+				$userIds = Users::extractUserIds($user->getSubordinateUsers());
+				$userIds[] = $user->id;
 
-			$condition[] = 'userid IN (' . implode(',', $userIds) . ')';
-			$condition = 'WHERE (' . implode(') AND (', $condition) . ')';
+				if (!empty($userIds))
+				{
+					$condition[] = 'userid IN (' . implode(',', $userIds) . ')';
+				}
+			}
+			if (!empty($condition))
+			{
+				$condition = 'WHERE (' . implode(') AND (', $condition) . ')';
+			}
+			else
+			{
+				$condition = 'WHERE 1=0';
+			}
 
 			$sql = strtr($sql, array('{{WHERE}}' => $condition));
 		}
